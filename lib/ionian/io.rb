@@ -1,6 +1,6 @@
 module Ionian
   # A mixin for IO objects that allows regular expression matching
-  # and convenient notification of data in the buffer.
+  # and convenient notification of received data.
   #
   # This module was designed to be EXTENDED by instantiated objects
   # that implement the standard library IO class.

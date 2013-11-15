@@ -4,9 +4,9 @@ Gem::Specification.new do |s|
   s.name      = 'ionian'
   s.version   = version
   s.date      = Time.now.strftime '%Y-%m-%d'
-  s.summary   = 'Regular expression matching and notification for IO.'
+  s.summary   = 'Regular expression matching and notification for IO streams.'
   s.description =
-  "A mixin for IO objects that allows regular expression matching and convenient notification of data in the buffer."
+  "A library to simplify interaction with IO streams. This includes network sockets, file sockets, and serial streams like the console and RS232. Features regular expression matching and notification of received data."
   
   s.homepage  = 'https://bitbucket.org/amclain/ionian'
   s.authors   = ['Alex McLain']
