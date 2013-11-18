@@ -2,7 +2,7 @@ module Ionian
   # A mixin for IO objects that allows regular expression matching
   # and convenient notification of received data.
   #
-  # This module was designed to be EXTENDED by instantiated objects
+  # This module was designed to be extended by instantiated objects
   # that implement the standard library IO class.
   # my_socket.extend Ionian::IO
   module IO
@@ -88,7 +88,7 @@ module Ionian
         @ionian_buf = $' # Leave post match data in the buffer.
       end
       
-      # Convert match parameters to methods.
+      # Convert named captures to methods.
       if build_methods
         @matches.each do |match|
           match.names
