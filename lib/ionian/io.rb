@@ -117,9 +117,9 @@ module Ionian
           end
         rescue EOFError
         rescue IOError
+        ensure
+          @match_listener = nil
         end
-        
-        @match_listener = nil
       end
     end
     
