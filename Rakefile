@@ -1,15 +1,10 @@
-require 'rake/testtask'
+require 'rspec/core/rake_task'
 require 'rdoc/task'
 
 task :default => [:test]
 
 # Run tests.
-task :test do
-  Rake::TestTask.new do |t|
-    t.pattern = 'test/**/*_test.rb'
-    t.libs << 'test'
-  end
-end
+RSpec::Core::RakeTask.new(:test)
 
 # Build the gem.
 task :build => [:doc] do
