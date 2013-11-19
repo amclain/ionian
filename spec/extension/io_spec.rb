@@ -1,10 +1,10 @@
-require 'ionian/io'
+require 'ionian/extension/io'
 require 'socket'
 require 'timeout'
 
 Thread.abort_on_exception = true
 
-describe Ionian::IO do
+describe Ionian::Extension::IO do
   
   before do
     @port = 5050
@@ -16,7 +16,7 @@ describe Ionian::IO do
     end
     
     @ionian = @object = TCPSocket.new 'localhost', @port
-    @ionian.extend Ionian::IO
+    @ionian.extend Ionian::Extension::IO
     @ionian.expression = /(?<cmd>\w+)\s+(?<param>\d+)\s+(?<value>\d+)\s*?[\r\n]+/
     
     Timeout.timeout 1 do; @server_thread.join; end
