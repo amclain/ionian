@@ -27,6 +27,11 @@ module Ionian
         @ionian_build_methods = true
       end
       
+      # Returns true if there is data in the receive buffer.
+      def has_data?
+        (::IO.select [self], nil, nil, 0) ? true : false
+      end
+      
       # Returns the regular expression used for #read_match.
       def expression
         @ionian_expression

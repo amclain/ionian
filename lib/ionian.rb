@@ -1,5 +1,6 @@
 require 'ionian/extension/io'
 require 'ionian/extension/socket'
+require 'ionian/socket'
 
 # A library to simplify interaction with IO streams.
 # This includes network sockets, file sockets, and
