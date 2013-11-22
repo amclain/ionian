@@ -1,6 +1,9 @@
+require 'listener_socket_context'
 require 'ionian/socket'
 
 describe Ionian::Socket do
+  
+  include_context "listener socket", Ionian::Extension::Socket
   
   # Server needs to be a separate class.
   it "can be instantitated as a TCP, UDP, Unix server socket"

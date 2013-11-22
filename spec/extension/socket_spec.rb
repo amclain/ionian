@@ -1,33 +1,9 @@
+require 'listener_socket_context'
 require 'ionian/extension/socket'
 
 describe Ionian::Extension::Socket do
   
-  before do
-    @port = 5050
-    
-    @server = TCPServer.new @port
-    
-    @server_thread = Thread.new do
-      @client = @server.accept
-    end
-    
-    @ionian = @object = TCPSocket.new 'localhost', @port
-    @ionian.extend Ionian::Extension::Socket
-    
-    Timeout.timeout 1 do; @server_thread.join; end
-  end
-  
-  after do
-    @ionian.close if @ionian
-    @client.close if @client
-    @server.close if @server
-    @server_thread.kill if @server_thread
-    
-    @server = nil
-    @client = nil
-    @ionian = nil
-    @server_thread = nil
-  end
+  include_context "listener socket", Ionian::Extension::Socket
   
   it "provides accessors for tcp_nodelay" do
     @ionian.should respond_to :no_delay
