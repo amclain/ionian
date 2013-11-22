@@ -3,13 +3,29 @@ require 'ionian/extension/socket'
 module Ionian
   class Socket
     
+    ############
+    # TODO NOTES
+    ############
+    # Always lazily instiantiate @socket, even when persistent?
+    # May not work with forwarding method calls.
+    # Oh! Unless the forwarded methods check for @socket to exist.
+    # Will persistent methods have to check for the socket not to be
+    # closed as well?
+    
     def initialize(**kvargs)
-      create_socket unless kvargs.fetch :non_persistent, false
+      @host           = kvargs.fetch :host
+      @port           = kvargs.fetch :port, 23
+      @expression     = kvargs.fetch :expression, nil
+      @non_persistent = kvargs.fetch :non_persistent, false
+      
+      create_socket unless @non_persistent
     end
     
     private
     def create_socket(**kvargs)
-      @socket = ::TCPSocket.new 'localhost', 22
+      @socket.close if @socket and not @socket.closed?
+      
+      @socket = ::TCPSocket.new @host, @port
       @socket.extend Ionian::Extension::Socket
       initialize_socket_methods
     end
@@ -36,6 +52,41 @@ module Ionian
         end
       
       @socket_methods_initialized = true
+    end
+    
+    def write(string)
+      
+      ######
+      # TODO
+      ######
+      # Should this just pass to @socket.write and non-persistent
+      # gets its own set of methods?
+      ######
+      # For compatibility, this should probably return number of
+      # bytes written.
+      # 
+      # If that's the case, how do you receive data from a closed
+      # socket?
+      # Do non-persistent sockets always have to use read_match?
+      # Is #readpartial called after write?
+      # What if no data is expected to come back? Does that fall
+      # under :no_receive (symbol not determined)?
+      # Does the received data get dumped in @buf and accessed
+      # through overridden methods of the IO readers?
+      
+      received = ''
+      
+      if @non_persistent
+        create_socket
+        @socket.expression = @expression if @expression
+        @socket.write
+        received = @socket.read_match
+        @socket.close
+      else
+        @socket.write
+      end
+      
+      received
     end
     
   end

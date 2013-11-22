@@ -1,3 +1,4 @@
+require 'listener_socket_context'
 require 'ionian/extension/io'
 require 'socket'
 require 'timeout'
@@ -6,33 +7,7 @@ Thread.abort_on_exception = true
 
 describe Ionian::Extension::IO do
   
-  before do
-    @port = 5050
-    
-    @server = TCPServer.new @port
-    
-    @server_thread = Thread.new do
-      @client = @server.accept
-    end
-    
-    @ionian = @object = TCPSocket.new 'localhost', @port
-    @ionian.extend Ionian::Extension::IO
-    @ionian.expression = /(?<cmd>\w+)\s+(?<param>\d+)\s+(?<value>\d+)\s*?[\r\n]+/
-    
-    Timeout.timeout 1 do; @server_thread.join; end
-  end
-  
-  after do
-    @ionian.close if @ionian
-    @client.close if @client
-    @server.close if @server
-    @server_thread.kill if @server_thread
-    
-    @server = nil
-    @client = nil
-    @ionian = nil
-    @server_thread = nil
-  end
+  include_context "listener socket"
   
   it "can get and set the IO timeout" do
     value = 5
