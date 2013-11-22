@@ -27,6 +27,8 @@ module Ionian
       
       @socket = ::TCPSocket.new @host, @port
       @socket.extend Ionian::Extension::Socket
+      @socket.expression = @expression if @expression
+      
       initialize_socket_methods
     end
     
@@ -54,6 +56,18 @@ module Ionian
       @socket_methods_initialized = true
     end
     
+    # Returns true if there is data in the receive buffer.
+    def has_data?
+      return false unless @socket
+      @socket.has_data?
+    end
+    
+    # Returns true if the socket is closed.
+    def closed?
+      return true unless @socket
+      @socket.closed?
+    end
+    
     def write(string)
       
       ######
@@ -73,20 +87,22 @@ module Ionian
       # under :no_receive (symbol not determined)?
       # Does the received data get dumped in @buf and accessed
       # through overridden methods of the IO readers?
+      # 
+      # ** Do the minimum to keep the function compatible. **
       
-      received = ''
+      
+      create_socket if @non_persistent
+      num_bytes = @socket.write
       
       if @non_persistent
-        create_socket
-        @socket.expression = @expression if @expression
-        @socket.write
-        received = @socket.read_match
+        # Read in data to prevent RST packets.
+        has_data = ::IO.select [@socket], nil, nil, 0
+        @socket.readpartial 0xFFFF if has_data
+        
         @socket.close
-      else
-        @socket.write
       end
       
-      received
+      num_bytes
     end
     
   end
