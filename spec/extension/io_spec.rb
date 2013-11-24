@@ -1,5 +1,5 @@
 require 'listener_socket_context'
-require 'ionian_interface'
+require 'extension/ionian_interface'
 require 'ionian/extension/io'
 require 'socket'
 require 'timeout'
