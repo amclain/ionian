@@ -9,10 +9,17 @@ describe Ionian::Socket do
   
   before do
     @socket = @object = Ionian::Socket.new host: 'localhost', port: @port
+    
+    @unix_socket_file = '/tmp/ionian.test.sock'
+    @unix_server = UNIXServer.new @unix_socket_file
   end
   
   after do
     @socket = @object = nil
+    
+    @unix_server.close if @unix_server and not @unix_server.closed?
+    @unix_server = nil
+    File.delete @unix_socket_file
   end
   
   include_examples "ionian interface"
@@ -40,7 +47,11 @@ describe Ionian::Socket do
     @socket.instance_variable_get(:@socket).class.should eq UDPSocket
   end
   
-  it "can be instantiated as a Unix client socket"
+  it "can be instantiated as a Unix client socket" do
+    @socket = Ionian::Socket.new host: @unix_socket_file, protocol: :unix
+    @socket.protocol?.should eq :unix
+    @socket.instance_variable_get(:@socket).class.should eq UNIXSocket
+  end
   
   it "defaults to TCP if the protocol is not specified" do
     @socket = Ionian::Socket.new host: 'localhost', port: @port
@@ -65,7 +76,11 @@ describe Ionian::Socket do
     @socket.instance_variable_get(:@socket).closed?.should eq false
   end
   
-  it "can open a persistent Unix client (standard: stays open)"
+  it "can open a persistent Unix client (standard: stays open)" do
+    @socket = Ionian::Socket.new host: @unix_socket_file, protocol: :unix
+    @socket.persistent?.should eq true
+    @socket.instance_variable_get(:@socket).closed?.should eq false
+  end
   
   it "can open a non-persistent TCP client (closes after message received)"
   

@@ -41,6 +41,8 @@ module Ionian
       when :udp
         @socket = ::UDPSocket.new
         @socket.connect @host, @port
+      when :unix
+        @socket = ::UNIXSocket.new @host
       end
       
       @socket.extend Ionian::Extension::Socket
