@@ -7,8 +7,25 @@ describe Ionian::Socket do
   
   include_context "listener socket", Ionian::Extension::Socket
   
+  before do
+    @socket = @object = Ionian::Socket.new host: 'localhost', port: @port
+  end
+  
+  after do
+    @socket = @object = nil
+  end
+  
   include_examples "ionian interface"
   include_examples "socket extension interface"
+  
+  
+  it "responds to protocol?" do
+    @socket.should respond_to :protocol?
+  end
+  
+  it "responds to persistent?" do
+    @socket.should respond_to :persistent?
+  end
   
   
   it "can be instantiated as a TCP client socket"
@@ -17,9 +34,15 @@ describe Ionian::Socket do
   
   it "can be instantiated as a Unix client socket"
   
-  it "defaults to TCP if the socket type is not specified"
+  it "defaults to TCP if the protocol is not specified" do
+    @socket = Ionian::Socket.new host: 'localhost', port: @port
+    @socket.protocol?.should eq :tcp
+  end
   
-  it "defaults to persistent"
+  it "defaults to persistent" do
+    @socket = Ionian::Socket.new host: 'localhost', port: @port
+    @socket.persistent?.should eq true
+  end
   
   it "can open a persistent TCP client (standard: stays open)"
   
