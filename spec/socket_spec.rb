@@ -11,6 +11,7 @@ describe Ionian::Socket do
     @socket = @object = Ionian::Socket.new host: 'localhost', port: @port
     
     @unix_socket_file = '/tmp/ionian.test.sock'
+    File.delete @unix_socket_file if File.exists? @unix_socket_file
     @unix_server = UNIXServer.new @unix_socket_file
   end
   
@@ -19,7 +20,7 @@ describe Ionian::Socket do
     
     @unix_server.close if @unix_server and not @unix_server.closed?
     @unix_server = nil
-    File.delete @unix_socket_file
+    File.delete @unix_socket_file if File.exists? @unix_socket_file
   end
   
   include_examples "ionian interface"
@@ -68,18 +69,24 @@ describe Ionian::Socket do
     @socket = Ionian::Socket.new host: 'localhost', port: @port, protocol: :tcp
     @socket.persistent?.should eq true
     @socket.instance_variable_get(:@socket).closed?.should eq false
+    
+    # Send data.
   end
   
   it "can open a persistent UDP client (standard: stays open)" do
     @socket = Ionian::Socket.new host: 'localhost', port: @port, protocol: :udp
     @socket.persistent?.should eq true
     @socket.instance_variable_get(:@socket).closed?.should eq false
+    
+    # Send data.
   end
   
   it "can open a persistent Unix client (standard: stays open)" do
     @socket = Ionian::Socket.new host: @unix_socket_file, protocol: :unix
     @socket.persistent?.should eq true
     @socket.instance_variable_get(:@socket).closed?.should eq false
+    
+    # Send data.
   end
   
   it "can open a non-persistent TCP client (closes after message received)"
