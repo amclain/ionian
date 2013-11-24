@@ -1,5 +1,6 @@
 require 'listener_socket_context'
-require 'ionian_interface'
+require 'extension/ionian_interface'
+require 'extension/socket_extension_interface'
 require 'ionian/extension/socket'
 
 describe Ionian::Extension::Socket do
@@ -7,6 +8,7 @@ describe Ionian::Extension::Socket do
   include_context "listener socket", Ionian::Extension::Socket
   
   include_examples "ionian interface"
+  include_examples "socket extension interface"
   
   
   it "provides accessors for tcp_nodelay" do
