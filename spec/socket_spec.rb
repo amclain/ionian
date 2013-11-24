@@ -28,15 +28,24 @@ describe Ionian::Socket do
   end
   
   
-  it "can be instantiated as a TCP client socket"
+  it "can be instantiated as a TCP client socket" do
+    @socket = Ionian::Socket.new host: 'localhost', port: @port, protocol: :tcp
+    @socket.protocol?.should eq :tcp
+    @socket.instance_variable_get(:@socket).class.should eq TCPSocket
+  end
   
-  it "can be instantiated as a UDP client socket"
+  it "can be instantiated as a UDP client socket" do
+    @socket = Ionian::Socket.new host: 'localhost', port: @port, protocol: :udp
+    @socket.protocol?.should eq :udp
+    @socket.instance_variable_get(:@socket).class.should eq UDPSocket
+  end
   
   it "can be instantiated as a Unix client socket"
   
   it "defaults to TCP if the protocol is not specified" do
     @socket = Ionian::Socket.new host: 'localhost', port: @port
     @socket.protocol?.should eq :tcp
+    @socket.instance_variable_get(:@socket).class.should eq TCPSocket
   end
   
   it "defaults to persistent" do
