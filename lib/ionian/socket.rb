@@ -35,7 +35,14 @@ module Ionian
     def create_socket(**kvargs)
       @socket.close if @socket and not @socket.closed?
       
-      @socket = ::TCPSocket.new @host, @port
+      case @protocol
+      when :tcp
+        @socket = ::TCPSocket.new @host, @port
+      when :udp
+        @socket = ::UDPSocket.new
+        @socket.connect @host, @port
+      end
+      
       @socket.extend Ionian::Extension::Socket
       @socket.expression = @expression if @expression
       
