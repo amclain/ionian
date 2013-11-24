@@ -53,9 +53,17 @@ describe Ionian::Socket do
     @socket.persistent?.should eq true
   end
   
-  it "can open a persistent TCP client (standard: stays open)"
+  it "can open a persistent TCP client (standard: stays open)" do
+    @socket = Ionian::Socket.new host: 'localhost', port: @port, protocol: :tcp
+    @socket.persistent?.should eq true
+    @socket.instance_variable_get(:@socket).closed?.should eq false
+  end
   
-  it "can open a persistent UDP client (standard: stays open)"
+  it "can open a persistent UDP client (standard: stays open)" do
+    @socket = Ionian::Socket.new host: 'localhost', port: @port, protocol: :udp
+    @socket.persistent?.should eq true
+    @socket.instance_variable_get(:@socket).closed?.should eq false
+  end
   
   it "can open a persistent Unix client (standard: stays open)"
   
