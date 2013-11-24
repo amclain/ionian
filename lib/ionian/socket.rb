@@ -68,29 +68,9 @@ module Ionian
       @socket.closed?
     end
     
+    # Writes the given string to the socket. Returns the number of
+    # bytes written.
     def write(string)
-      
-      ######
-      # TODO
-      ######
-      # Should this just pass to @socket.write and non-persistent
-      # gets its own set of methods?
-      ######
-      # For compatibility, this should probably return number of
-      # bytes written.
-      # 
-      # If that's the case, how do you receive data from a closed
-      # socket?
-      # Do non-persistent sockets always have to use read_match?
-      # Is #readpartial called after write?
-      # What if no data is expected to come back? Does that fall
-      # under :no_receive (symbol not determined)?
-      # Does the received data get dumped in @buf and accessed
-      # through overridden methods of the IO readers?
-      # 
-      # ** Do the minimum to keep the function compatible. **
-      
-      
       create_socket if @non_persistent
       num_bytes = @socket.write
       
