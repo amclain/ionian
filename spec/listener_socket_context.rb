@@ -30,7 +30,7 @@ shared_context "listener socket" do |extension|
     
     @server = nil
     @client = nil
-    @ionian = nil
+    @ionian = @object = nil
     @server_thread = nil
   end
 end

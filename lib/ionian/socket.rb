@@ -16,10 +16,20 @@ module Ionian
       @host           = kvargs.fetch :host
       @port           = kvargs.fetch :port, 23
       @expression     = kvargs.fetch :expression, nil
+      @protocol       = kvargs.fetch :protocol, :tcp
       @non_persistent = kvargs.fetch :non_persistent, false
       
       create_socket unless @non_persistent
     end
+    
+    def protocol?
+      @protocol
+    end
+    
+    def persistent?
+      @non_persistent == false ? true : false
+    end
+    
     
     private
     def create_socket(**kvargs)
