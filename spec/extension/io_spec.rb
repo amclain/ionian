@@ -1,4 +1,5 @@
 require 'listener_socket_context'
+require 'ionian_interface'
 require 'ionian/extension/io'
 require 'socket'
 require 'timeout'
@@ -8,6 +9,9 @@ Thread.abort_on_exception = true
 describe Ionian::Extension::IO do
   
   include_context "listener socket"
+  
+  include_examples "ionian interface"
+  
   
   it "can get and set the IO timeout" do
     value = 5
@@ -95,18 +99,6 @@ describe Ionian::Extension::IO do
     
     Timeout.timeout 1 do; thread.join; end
     block_run.should eq true
-  end
-  
-  it "responds to register_observer" do
-    @ionian.should respond_to(:register_observer)
-  end
-  
-  it "responds to on_match" do
-    @ionian.should respond_to(:on_match)
-  end
-  
-  it "responds to unregister_observer" do
-    @ionian.should respond_to(:unregister_observer)
   end
   
 end
