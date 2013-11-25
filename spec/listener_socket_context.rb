@@ -23,9 +23,9 @@ shared_context "listener socket" do |extension|
   end
   
   after do
-    @ionian.close if @ionian
-    @client.close if @client
-    @server.close if @server
+    @ionian.close if @ionian and not @ionian.closed?
+    @client.close if @client and not @client.closed?
+    @server.close if @server and not @server.closed?
     @server_thread.kill if @server_thread
     
     @server = nil

@@ -16,6 +16,7 @@ describe Ionian::Socket do
   end
   
   after do
+    @socket.close if @socket and not @socket.closed?
     @socket = @object = nil
     
     @unix_server.close if @unix_server and not @unix_server.closed?
@@ -71,6 +72,13 @@ describe Ionian::Socket do
     @socket.instance_variable_get(:@socket).closed?.should eq false
     
     # Send data.
+    # data = 'test'
+    # @socket.puts data
+    # @socket.flush
+    
+    # sleep 0.1
+    # @client.has_data?.should eq true
+    # @client.readpartial(0xFFFF).should eq data
   end
   
   it "can open a persistent UDP client (standard: stays open)" do
