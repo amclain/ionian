@@ -1,5 +1,6 @@
 require 'ionian/extension/io'
 require 'socket'
+require 'timeout'
 
 shared_context "listener socket" do |extension|
   
@@ -9,7 +10,21 @@ shared_context "listener socket" do |extension|
     @server = TCPServer.new @port
     
     @server_thread = Thread.new do
-      @client = @server.accept
+      @server_thread_started = Thread.new {}
+      
+      loop do
+        begin
+          break if @server.closed?
+          new_request = ::IO.select [@server], nil, nil
+          
+          if new_request
+            @client.close if @client and not @client.closed?
+            @client = @server.accept
+          end
+        rescue Exception
+          break
+        end
+      end
     end
     
     @ionian = @object = TCPSocket.new 'localhost', @port
@@ -19,7 +34,10 @@ shared_context "listener socket" do |extension|
     
     @ionian.expression = /(?<cmd>\w+)\s+(?<param>\d+)\s+(?<value>\d+)\s*?[\r\n]+/
     
-    Timeout.timeout 1 do; @server_thread.join; end
+    # This prevents the tests from running until the server
+    # thread has started.
+    @server_thread.wakeup
+    Timeout.timeout 1 do; @server_thread_started.join; end
   end
   
   after do
@@ -27,6 +45,7 @@ shared_context "listener socket" do |extension|
     @client.close if @client and not @client.closed?
     @server.close if @server and not @server.closed?
     @server_thread.kill if @server_thread
+    Timeout.timeout 1 do; @server_thread.join; end
     
     @server = nil
     @client = nil
