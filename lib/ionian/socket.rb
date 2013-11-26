@@ -17,9 +17,9 @@ module Ionian
       @port           = kvargs.fetch :port, 23
       @expression     = kvargs.fetch :expression, nil
       @protocol       = kvargs.fetch :protocol, :tcp
-      @non_persistent = kvargs.fetch :non_persistent, false
+      @persistent     = kvargs.fetch :persistent, true
       
-      create_socket unless @non_persistent
+      create_socket if @persistent
     end
     
     def protocol?
@@ -27,7 +27,7 @@ module Ionian
     end
     
     def persistent?
-      @non_persistent == false ? true : false
+      @persistent == false or @persistent == nil ? false : true
     end
     
     
@@ -90,10 +90,10 @@ module Ionian
     # Writes the given string to the socket. Returns the number of
     # bytes written.
     def write(string)
-      create_socket if @non_persistent
+      create_socket unless @persistent
       num_bytes = @socket.write
       
-      if @non_persistent
+      unless @persistent
         # Read in data to prevent RST packets.
         has_data = ::IO.select [@socket], nil, nil, 0
         @socket.readpartial 0xFFFF if has_data
