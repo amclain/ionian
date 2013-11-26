@@ -117,7 +117,7 @@ describe Ionian::Socket do
   it "can open a persistent TCP client (standard: stays open)" do
     @socket = Ionian::Socket.new host: 'localhost', port: @port, protocol: :tcp
     @socket.persistent?.should eq true
-    @socket.instance_variable_get(:@socket).closed?.should eq false
+    @socket.closed?.should eq false
     
     # Send data.
     data = 'test'
@@ -137,7 +137,7 @@ describe Ionian::Socket do
   it "can open a persistent UDP client (standard: stays open)" do
     @socket = Ionian::Socket.new host: 'localhost', port: @port, protocol: :udp
     @socket.persistent?.should eq true
-    @socket.instance_variable_get(:@socket).closed?.should eq false
+    @socket.closed?.should eq false
     
     # Send data.
   end
@@ -145,7 +145,7 @@ describe Ionian::Socket do
   it "can open a persistent Unix client (standard: stays open)" do
     @socket = Ionian::Socket.new host: @unix_socket_file, protocol: :unix
     @socket.persistent?.should eq true
-    @socket.instance_variable_get(:@socket).closed?.should eq false
+    @socket.closed?.should eq false
     
     # Send data.
     data = 'test'
@@ -162,7 +162,33 @@ describe Ionian::Socket do
     @socket.closed?.should eq false
   end
   
-  it "can open a non-persistent TCP client (closes after message received)"
+  it "can open a non-persistent TCP client (closes after message received)" do
+    @socket = Ionian::Socket.new \
+      host: 'localhost',
+      port: @port,
+      protocol: :tcp,
+      persistent: false
+      
+    @socket.persistent?.should eq false
+    @socket.closed?.should eq true
+    
+    # Send data.
+    data = 'test'
+    @socket.write data
+    
+    # Flushing a non-persistent socket should have no effect;
+    # the socket will flush and close on #write.
+    @socket.flush
+    
+    sleep 0.1
+    @client.extend Ionian::Extension::Socket
+    @client.has_data?.should eq true
+    @client.readpartial(0xFFFF).should eq data
+    
+    # Socket should still be open.
+    sleep 0.1
+    @socket.closed?.should eq true
+  end
   
   it "can open a non-persistent Unix client (closes after message received)"
   
