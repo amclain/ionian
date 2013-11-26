@@ -185,7 +185,20 @@ describe Ionian::Socket do
     @client.has_data?.should eq true
     @client.readpartial(0xFFFF).should eq data
     
-    # Socket should still be open.
+    # Socket should be closed.
+    sleep 0.1
+    @socket.closed?.should eq true
+    
+    # Send more data.
+    data = 'another test'
+    @socket.write data
+    
+    sleep 0.1
+    @client.extend Ionian::Extension::Socket
+    @client.has_data?.should eq true
+    @client.readpartial(0xFFFF).should eq data
+    
+    # Socket should be closed.
     sleep 0.1
     @socket.closed?.should eq true
   end
