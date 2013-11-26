@@ -13,6 +13,8 @@ module Ionian
     # closed as well?
     
     def initialize(**kvargs)
+      @socket         = nil
+      
       @host           = kvargs.fetch :host
       @port           = kvargs.fetch :port, 23
       @expression     = kvargs.fetch :expression, nil
@@ -22,17 +24,56 @@ module Ionian
       create_socket if @persistent
     end
     
+    # Returns a symbol of the type of protocol this socket uses:
+    # :tcp, :udp, :unix
     def protocol?
       @protocol
     end
     
+    # Returns true if the socket remains open after writing data.
     def persistent?
-      @persistent == false or @persistent == nil ? false : true
+      @persistent == false || @persistent == nil ? false : true
+    end
+    
+    # Returns true if there is data in the receive buffer.
+    def has_data?
+      return false unless @socket
+      @socket.has_data?
+    end
+    
+    # Returns true if the socket is closed.
+    def closed?
+      return true unless @socket
+      @socket.closed?
+    end
+    
+    # Flushes buffered data to the operating system.
+    # This method has no effect on non-persistent sockets.
+    def flush
+      @socket.flush if @persistent
+    end
+    
+    # Writes the given string to the socket. Returns the number of
+    # bytes written.
+    def write(string)
+      create_socket unless @persistent
+      num_bytes = @socket.write string
+      
+      unless @persistent
+        # Read in data to prevent RST packets.
+        has_data = ::IO.select [@socket], nil, nil, 0
+        @socket.readpartial 0xFFFF if has_data
+        
+        @socket.close
+      end
+      
+      num_bytes
     end
     
     
     private
-    def create_socket(**kvargs)
+    
+    def create_socket
       @socket.close if @socket and not @socket.closed?
       
       case @protocol
@@ -67,41 +108,12 @@ module Ionian
         .select {|m| @socket.respond_to? m}
         .select {|m| not self.respond_to? m}
         .each do |m|
-          singleton_class.send :define_method, m do |*args, &block|
+          self.singleton_class.send :define_method, m do |*args, &block|
             @socket.__send__ m, *args, &block
           end
         end
       
       @socket_methods_initialized = true
-    end
-    
-    # Returns true if there is data in the receive buffer.
-    def has_data?
-      return false unless @socket
-      @socket.has_data?
-    end
-    
-    # Returns true if the socket is closed.
-    def closed?
-      return true unless @socket
-      @socket.closed?
-    end
-    
-    # Writes the given string to the socket. Returns the number of
-    # bytes written.
-    def write(string)
-      create_socket unless @persistent
-      num_bytes = @socket.write
-      
-      unless @persistent
-        # Read in data to prevent RST packets.
-        has_data = ::IO.select [@socket], nil, nil, 0
-        @socket.readpartial 0xFFFF if has_data
-        
-        @socket.close
-      end
-      
-      num_bytes
     end
     
   end
