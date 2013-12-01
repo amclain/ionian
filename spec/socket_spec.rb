@@ -12,7 +12,16 @@ describe Ionian::Socket do
   
   before do
     # Object under test.
-    @socket = @object = Ionian::Socket.new host: 'localhost', port: @port
+    @socket = @object = Ionian::Socket.new \
+      host: 'localhost',
+      port: @port
+    
+    # Non-persistent test socket.
+    @socket_np = Ionian::Socket.new \
+      host: 'localhost',
+      port: @port,
+      protocol: :tcp,
+      persistent: false
     
     # Unix socket test server.
     @unix_socket_file = '/tmp/ionian.test.sock'
@@ -163,22 +172,16 @@ describe Ionian::Socket do
   end
   
   it "can open a non-persistent TCP client (closes after message received)" do
-    @socket = Ionian::Socket.new \
-      host: 'localhost',
-      port: @port,
-      protocol: :tcp,
-      persistent: false
-      
-    @socket.persistent?.should eq false
-    @socket.closed?.should eq true
+    @socket_np.persistent?.should eq false
+    @socket_np.closed?.should eq true
     
     # Send data.
     data = 'test'
-    @socket.write data
+    @socket_np.write data
     
     # Flushing a non-persistent socket should have no effect;
     # the socket will flush and close on #write.
-    @socket.flush
+    @socket_np.flush
     
     sleep 0.1
     @client.extend Ionian::Extension::Socket
@@ -187,11 +190,11 @@ describe Ionian::Socket do
     
     # Socket should be closed.
     sleep 0.1
-    @socket.closed?.should eq true
+    @socket_np.closed?.should eq true
     
     # Send more data.
     data = 'another test'
-    @socket.write data
+    @socket_np.write data
     
     sleep 0.1
     @client.extend Ionian::Extension::Socket
@@ -200,7 +203,7 @@ describe Ionian::Socket do
     
     # Socket should be closed.
     sleep 0.1
-    @socket.closed?.should eq true
+    @socket_np.closed?.should eq true
   end
   
   it "can open a non-persistent Unix client (closes after message received)"
@@ -221,17 +224,11 @@ describe Ionian::Socket do
   
   
   it "implements puts non-persistent" do
-    @socket.should respond_to :puts
-    
-    @socket = Ionian::Socket.new \
-      host: 'localhost',
-      port: @port,
-      protocol: :tcp,
-      persistent: false
+    @socket_np.should respond_to :puts
     
     data = 'test push method'
-    @socket.puts data
-    @socket.flush
+    @socket_np.puts data
+    @socket_np.flush
     
     sleep 0.1
     @client.extend Ionian::Extension::Socket
@@ -240,17 +237,11 @@ describe Ionian::Socket do
   end
   
   it "implements << non-persistent" do
-    @socket.should respond_to :<<
-    
-    @socket = Ionian::Socket.new \
-      host: 'localhost',
-      port: @port,
-      protocol: :tcp,
-      persistent: false
+    @socket_np.should respond_to :<<
     
     data = 'test push operator'
-    @socket << data
-    @socket.flush
+    @socket_np << data
+    @socket_np.flush
     
     sleep 0.1
     @client.extend Ionian::Extension::Socket
