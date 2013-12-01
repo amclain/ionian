@@ -23,7 +23,7 @@ module Ionian
       
       create_socket if @persistent
     end
-    
+        
     # Returns a symbol of the type of protocol this socket uses:
     # :tcp, :udp, :unix
     def protocol?
@@ -53,6 +53,12 @@ module Ionian
       @socket.flush if @persistent
     end
     
+    # Writes the given string(s) to the socket and appends a
+    # newline character to any string not already ending with one.
+    def puts(*string)
+      self.write string.map{|s| s.chomp}.join("\n") + "\n"
+    end
+    
     # Writes the given string to the socket. Returns the number of
     # bytes written.
     def write(string)
@@ -69,6 +75,8 @@ module Ionian
       
       num_bytes
     end
+    
+    alias_method :<<, :write
     
     
     private
