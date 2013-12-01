@@ -28,8 +28,11 @@ module Ionian
       end
       
       # Returns true if there is data in the receive buffer.
-      def has_data?
-        (::IO.select [self], nil, nil, 0) ? true : false
+      # Args:
+      #   Timeout: Number of seconds to wait for data until
+      #     giving up. Set to nil for blocking.
+      def has_data?(timeout: 0)
+        (::IO.select [self], nil, nil, timeout) ? true : false
       end
       
       # Returns the regular expression used for #read_match.

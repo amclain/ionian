@@ -36,9 +36,12 @@ module Ionian
     end
     
     # Returns true if there is data in the receive buffer.
-    def has_data?
+    # Args:
+    #   Timeout: Number of seconds to wait for data until
+    #     giving up. Set to nil for blocking.
+    def has_data?(**kvargs)
       return false unless @socket
-      @socket.has_data?
+      @socket.has_data? kvargs
     end
     
     # Returns true if the socket is closed.
