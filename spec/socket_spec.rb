@@ -213,4 +213,49 @@ describe Ionian::Socket do
   
   it "ignores the send-and-forget flag for UDP sockets"
   
+  it "can send a TCP command and receive a response"
+  
+  it "can send a UDP command and receive a response"
+  
+  it "can send a Unix socket command and receive a response"
+  
+  
+  it "implements puts non-persistent" do
+    @socket.should respond_to :puts
+    
+    @socket = Ionian::Socket.new \
+      host: 'localhost',
+      port: @port,
+      protocol: :tcp,
+      persistent: false
+    
+    data = 'test push method'
+    @socket.puts data
+    @socket.flush
+    
+    sleep 0.1
+    @client.extend Ionian::Extension::Socket
+    @client.has_data?.should eq true
+    @client.readpartial(0xFFFF).should eq "#{data}\n"
+  end
+  
+  it "implements << non-persistent" do
+    @socket.should respond_to :<<
+    
+    @socket = Ionian::Socket.new \
+      host: 'localhost',
+      port: @port,
+      protocol: :tcp,
+      persistent: false
+    
+    data = 'test push operator'
+    @socket << data
+    @socket.flush
+    
+    sleep 0.1
+    @client.extend Ionian::Extension::Socket
+    @client.has_data?.should eq true
+    @client.readpartial(0xFFFF).should eq data
+  end
+  
 end
