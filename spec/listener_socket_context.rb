@@ -52,4 +52,5 @@ shared_context "listener socket" do |extension|
     @ionian = @object = nil
     @server_thread = nil
   end
+  
 end
