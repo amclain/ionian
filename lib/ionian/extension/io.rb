@@ -32,7 +32,7 @@ module Ionian
       #   Timeout: Number of seconds to wait for data until
       #     giving up. Set to nil for blocking.
       def has_data?(timeout: 0)
-        (::IO.select [self], nil, nil, timeout) ? true : false
+        ::IO.select([self], nil, nil, timeout) ? true : false
       end
       
       # Returns the regular expression used for #read_match.
