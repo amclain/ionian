@@ -254,6 +254,8 @@ describe Ionian::Socket do
   
   
   it "can send a TCP command and receive a response - persistent" do
+    pending
+    
     data = 'tcp command test'
     @socket.cmd(data).should eq (data + "\n")
   end

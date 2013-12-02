@@ -35,6 +35,23 @@ module Ionian
       @persistent == false || @persistent == nil ? false : true
     end
     
+    # Send a command (data) to the socket. Returns received matches.
+    # Block yields received match.
+    # See Ionian::Extension::IO#read_match
+    def cmd(string, **kvargs, &block)
+      create_socket unless @persistent
+      @socket.write string
+      @socket.flush
+      
+      matches = @socket.read_match(kvargs) {|match| yield match}
+      @socket.close unless @persistent
+      
+      matches
+    end
+    
+    
+    ### Methods Forwarded To @socket ###
+    
     # Returns true if there is data in the receive buffer.
     # Args:
     #   Timeout: Number of seconds to wait for data until
