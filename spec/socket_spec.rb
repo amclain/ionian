@@ -93,6 +93,10 @@ describe Ionian::Socket do
     @socket.should respond_to :persistent?
   end
   
+  it "responds to cmd" do
+    @socket.should respond_to :cmd
+  end
+  
   
   it "can be instantiated as a TCP client socket" do
     @socket = Ionian::Socket.new host: 'localhost', port: @port, protocol: :tcp
@@ -228,7 +232,6 @@ describe Ionian::Socket do
     
     data = 'test push method'
     @socket_np.puts data
-    @socket_np.flush
     
     sleep 0.1
     @client.extend Ionian::Extension::Socket
@@ -248,5 +251,13 @@ describe Ionian::Socket do
     @client.has_data?.should eq true
     @client.readpartial(0xFFFF).should eq data
   end
+  
+  
+  it "can send a TCP command and receive a response - persistent" do
+    data = 'tcp command test'
+    @socket.cmd(data).should eq (data + "\n")
+  end
+  
+  it "can send a TCP command and receive a response - non-persistent"
   
 end
