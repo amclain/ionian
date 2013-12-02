@@ -3,15 +3,6 @@ require 'ionian/extension/socket'
 module Ionian
   class Socket
     
-    ############
-    # TODO NOTES
-    ############
-    # Always lazily instiantiate @socket, even when persistent?
-    # May not work with forwarding method calls.
-    # Oh! Unless the forwarded methods check for @socket to exist.
-    # Will persistent methods have to check for the socket not to be
-    # closed as well?
-    
     def initialize(**kvargs)
       @socket         = nil
       
