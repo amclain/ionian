@@ -43,7 +43,7 @@ module Ionian
       @socket.write string
       @socket.flush
       
-      matches = @socket.read_match(kvargs) {|match| yield match}
+      matches = @socket.read_match(kvargs) {|match| yield match if block_given?}
       @socket.close unless @persistent
       
       matches
