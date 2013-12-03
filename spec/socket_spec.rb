@@ -8,7 +8,7 @@ require 'extension/socket_extension_interface'
 
 
 shared_examples "a persistent socket" do
-  it "can send data" do
+  it "can write data" do
     # Send data.
     data = 'test'
     @socket.write data
@@ -24,7 +24,7 @@ end
 
 
 shared_examples "a non-persistent socket" do
-  it "can send data" do
+  it "can write data" do
     # Send data.
     data = 'test'
     @socket.write data
@@ -49,17 +49,34 @@ shared_examples "a non-persistent socket" do
     # Socket should be closed.
     @socket.closed?.should eq true
   end
+  
+  it "can write data with the '<<' operator" do
+    data = 'test << operator'
+    @socket << data
+    @socket.flush
+    
+    wait_until { @client and !@client.closed? and @client.has_data? }
+    @client.readpartial(0xFFFF).should eq data
+  end
+  
+  it "can 'puts' data" do
+    data = 'test push method'
+    @socket.puts data
+    
+    wait_until { @client and !@client.closed? and @client.has_data? }
+    @client.readpartial(0xFFFF).should eq "#{data}\n"
+  end
 end
 
 
 describe Ionian::Socket do
   
+  subject { @socket }
+  
   after do
     @socket.close if @socket and not @socket.closed?
     @socket = @object = nil
   end
-  
-  subject { @socket }
   
   describe "with only host and port arguments given" do
     include_context "listener socket", Ionian::Extension::Socket
@@ -158,6 +175,7 @@ describe Ionian::Socket do
     
     specify { subject.instance_variable_get(:@socket).class.should eq UDPSocket }
     
+    it "behaves like a persistent socket"
     # it_behaves_like "a persistent socket" # pending
   end
   
@@ -174,9 +192,9 @@ describe Ionian::Socket do
     its(:closed?)     { should eq true }
     
     # It ignores the non-persistent flag
+    it "behaves like a persistent socket"
     # it_behaves_like "a persistent socket" # pending
   end
-  
   
   # it "can open a send-and-forget TCP client (closes after TX)"
   
@@ -189,28 +207,6 @@ describe Ionian::Socket do
   # it "can send a UDP command and receive a response"
   
   # it "can send a Unix socket command and receive a response"
-  
-  
-  # it "implements puts non-persistent" do
-  #   @socket_np.should respond_to :puts
-    
-  #   data = 'test push method'
-  #   @socket_np.puts data
-    
-  #   wait_until { !@client.closed? and @client.has_data? }
-  #   @client.readpartial(0xFFFF).should eq "#{data}\n"
-  # end
-  
-  # it "implements << non-persistent" do
-  #   @socket_np.should respond_to :<<
-    
-  #   data = 'test push operator'
-  #   @socket_np << data
-  #   @socket_np.flush
-    
-  #   wait_until { !@client.closed? and @client.has_data? }
-  #   @client.readpartial(0xFFFF).should eq data
-  # end
   
   
   # it "can send a TCP command and receive a response - persistent" do
