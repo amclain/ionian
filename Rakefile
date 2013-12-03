@@ -4,7 +4,12 @@ require 'rdoc/task'
 task :default => [:test]
 
 # Run tests.
-RSpec::Core::RakeTask.new(:test)
+RSpec::Core::RakeTask.new :test do |c|
+  c.rspec_opts = 
+    '--color '\
+    '--format Fivemat '\
+    '--fail-fast'
+end
 
 # Build the gem.
 task :build => [:doc] do
