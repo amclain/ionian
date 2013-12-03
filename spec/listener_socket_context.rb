@@ -7,7 +7,7 @@ Thread.abort_on_exception = true
 
 # Convenience method for waiting until a condition is true, with a timeout
 def wait_until(timeout:1)
-  Timeout.timeout(timeout) { Thread.pass until Thread.exclusive { yield } }
+  Timeout.timeout(timeout) { Thread.pass; Thread.pass until Thread.exclusive { yield } }
 end
 
 
