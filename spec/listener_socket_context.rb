@@ -3,11 +3,12 @@ require 'socket'
 require 'timeout'
 
 
+def wait_until(timeout_time=1)
+  Timeout.timeout(timeout_time) { Thread.pass until yield }
+end
+
+
 shared_context "listener socket" do |extension|
-  
-  def wait_until(timeout_time=1)
-    Timeout.timeout(timeout_time) { Thread.pass until yield }
-  end
   
   before do
     @port = 5050
@@ -61,19 +62,19 @@ shared_context "unix listener socket" do
   
   before do
     # Unix socket test server.
-    @unix_socket_file = '/tmp/ionian.test.sock'
-    File.delete @unix_socket_file if File.exists? @unix_socket_file
-    @unix_server = UNIXServer.new @unix_socket_file
+    @socket_file = '/tmp/ionian.test.sock'
+    File.delete @socket_file if File.exists? @socket_file
+    @server = UNIXServer.new @socket_file
     
-    @unix_server_thread = Thread.new do
+    @server_thread = Thread.new do
       loop do
         begin
-          break if @unix_server.closed?
-          new_request = ::IO.select [@unix_server], nil, nil
+          break if @server.closed?
+          new_request = ::IO.select [@server], nil, nil
           
           if new_request
-            @unix_client.close if @unix_client and not @unix_client.closed?
-            @unix_client = @unix_server.accept.extend Ionian::Extension::Socket
+            @client.close if @client and not @client.closed?
+            @client = @server.accept.extend Ionian::Extension::Socket
           end
         rescue Exception
           break
@@ -81,16 +82,16 @@ shared_context "unix listener socket" do
       end
     end
     
-    # wait_until { @unix_client }
+    # wait_until { @client }
   end
   
   after do
-    @unix_server.close if @unix_server and not @unix_server.closed?
-    @unix_server = nil
-    File.delete @unix_socket_file if File.exists? @unix_socket_file
+    @server.close if @server and not @server.closed?
+    @server = nil
+    File.delete @socket_file if File.exists? @socket_file
     
-    @unix_server_thread.kill if @unix_server_thread
-    Timeout.timeout 1 do; @unix_server_thread.join; end
+    @server_thread.kill if @server_thread
+    Timeout.timeout 1 do; @server_thread.join; end
   end
   
 end
