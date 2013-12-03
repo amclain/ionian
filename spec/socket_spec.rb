@@ -32,7 +32,7 @@ describe Ionian::Socket do
       @unix_server_thread_started = Thread.new {}
       
       begin
-        @unix_client = @unix_server.accept
+        @unix_client = @unix_server.accept.extend Ionian::Extension::Socket
       rescue
       end
       
@@ -137,13 +137,10 @@ describe Ionian::Socket do
     @socket.write data
     @socket.flush
     
-    sleep 0.1
-    @client.extend Ionian::Extension::Socket
-    @client.has_data?.should eq true
+    wait_until { !@client.closed? and @client.has_data? }
     @client.readpartial(0xFFFF).should eq data
     
     # Socket should still be open.
-    sleep 0.1
     @socket.closed?.should eq false
   end
   
@@ -169,7 +166,7 @@ describe Ionian::Socket do
     @unix_client.extend Ionian::Extension::Socket
     @unix_client.has_data?.should eq true
     @unix_client.readpartial(0xFFFF).should eq data
-    
+
     # Socket should still be open.
     sleep 0.1
     @socket.closed?.should eq false
@@ -187,26 +184,20 @@ describe Ionian::Socket do
     # the socket will flush and close on #write.
     @socket_np.flush
     
-    sleep 0.1
-    @client.extend Ionian::Extension::Socket
-    @client.has_data?.should eq true
+    wait_until { !@client.closed? and @client.has_data? }
     @client.readpartial(0xFFFF).should eq data
     
     # Socket should be closed.
-    sleep 0.1
     @socket_np.closed?.should eq true
     
     # Send more data.
     data = 'another test'
     @socket_np.write data
     
-    sleep 0.1
-    @client.extend Ionian::Extension::Socket
-    @client.has_data?.should eq true
+    wait_until { !@client.closed? and @client.has_data? }
     @client.readpartial(0xFFFF).should eq data
     
     # Socket should be closed.
-    sleep 0.1
     @socket_np.closed?.should eq true
   end
   
@@ -233,9 +224,7 @@ describe Ionian::Socket do
     data = 'test push method'
     @socket_np.puts data
     
-    sleep 0.1
-    @client.extend Ionian::Extension::Socket
-    @client.has_data?.should eq true
+    wait_until { !@client.closed? and @client.has_data? }
     @client.readpartial(0xFFFF).should eq "#{data}\n"
   end
   
@@ -246,9 +235,7 @@ describe Ionian::Socket do
     @socket_np << data
     @socket_np.flush
     
-    sleep 0.1
-    @client.extend Ionian::Extension::Socket
-    @client.has_data?.should eq true
+    wait_until { !@client.closed? and @client.has_data? }
     @client.readpartial(0xFFFF).should eq data
   end
   
