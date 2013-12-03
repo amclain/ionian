@@ -4,6 +4,10 @@ require 'timeout'
 
 shared_context "listener socket" do |extension|
   
+  def wait_until(timeout_time=1)
+    Timeout.timeout(timeout_time) { Thread.pass until yield }
+  end
+  
   before do
     @port = 5050
     
@@ -33,7 +37,7 @@ shared_context "listener socket" do |extension|
     @ionian.expression = /(?<cmd>\w+)\s+(?<param>\d+)\s+(?<value>\d+)\s*?[\r\n]+/
     
     # This prevents the tests from running until the client is created
-    Timeout.timeout 1 do Thread.pass until @client end
+    wait_until { @client }
   end
   
   after do
@@ -41,7 +45,7 @@ shared_context "listener socket" do |extension|
     @client.close if @client and not @client.closed?
     @server.close if @server and not @server.closed?
     @server_thread.kill if @server_thread
-    Timeout.timeout 1 do @server_thread.join end
+    wait_until { @server_thread.join }
     
     @server = nil
     @client = nil
