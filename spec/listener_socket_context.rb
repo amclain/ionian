@@ -68,7 +68,7 @@ shared_context "unix listener socket" do
 end
 
 
-shared_context "udp listener socket" do |extension|
+shared_context "udp listener socket"
   let(:port) { 5050 }
   # let(:server) {...}
   # include_context "listener socket"

@@ -7,7 +7,27 @@ require 'extension/ionian_interface'
 require 'extension/socket_extension_interface'
 
 
-shared_examples "a persistent socket" do
+shared_examples "an ionian socket" do
+  it "can write data with the '<<' operator" do
+    data = 'test << operator'
+    subject << data
+    subject.flush
+    
+    wait_until { @client and !@client.closed? and @client.has_data? }
+    @client.readpartial(0xFFFF).should eq data
+  end
+  
+  it "can 'puts' data" do
+    data = 'test push method'
+    subject.puts data
+    
+    wait_until { @client and !@client.closed? and @client.has_data? }
+    @client.readpartial(0xFFFF).should eq "#{data}\n"
+  end
+end
+
+
+shared_examples "a persistent ionian socket" do
   it "can write data" do
     # Send data.
     data = 'test'
@@ -20,10 +40,12 @@ shared_examples "a persistent socket" do
     # Socket should still be open.
     subject.closed?.should eq false
   end
+  
+  it_behaves_like "an ionian socket"
 end
 
 
-shared_examples "a non-persistent socket" do
+shared_examples "a non-persistent ionian socket" do
   it "can write data" do
     # Send data.
     data = 'test'
@@ -50,22 +72,7 @@ shared_examples "a non-persistent socket" do
     subject.closed?.should eq true
   end
   
-  it "can write data with the '<<' operator" do
-    data = 'test << operator'
-    subject << data
-    subject.flush
-    
-    wait_until { @client and !@client.closed? and @client.has_data? }
-    @client.readpartial(0xFFFF).should eq data
-  end
-  
-  it "can 'puts' data" do
-    data = 'test push method'
-    subject.puts data
-    
-    wait_until { @client and !@client.closed? and @client.has_data? }
-    @client.readpartial(0xFFFF).should eq "#{data}\n"
-  end
+  it_behaves_like "an ionian socket"
 end
 
 
@@ -77,7 +84,7 @@ describe Ionian::Socket do
   after { subject.close if subject.respond_to? :close and not subject.closed? }
   
   describe "with only host and port arguments given" do
-    include_context "tcp listener socket", Ionian::Extension::Socket
+    include_context "tcp listener socket"
     
     include_examples "ionian interface"
     include_examples "socket extension interface"
@@ -91,7 +98,7 @@ describe Ionian::Socket do
   
   
   describe "with protocol: :tcp" do
-    include_context "tcp listener socket", Ionian::Extension::Socket
+    include_context "tcp listener socket"
     let(:kwargs) {{ host: 'localhost', port: port, protocol: :tcp }}
     
     its(:protocol?)   { should eq :tcp }
@@ -100,19 +107,19 @@ describe Ionian::Socket do
     
     specify { subject.instance_variable_get(:@socket).class.should eq TCPSocket }
     
-    it_behaves_like "a persistent socket"
+    it_behaves_like "a persistent ionian socket"
   end
   
   
   describe "with protocol: :tcp, persistent: false" do
-    include_context "tcp listener socket", Ionian::Extension::Socket
+    include_context "tcp listener socket"
     let(:kwargs) {{ host: 'localhost', port: port, protocol: :tcp, persistent: false }}
     
     its(:protocol?)   { should eq :tcp }
     its(:persistent?) { should eq false }
     its(:closed?)     { should eq true }
     
-    it_behaves_like "a non-persistent socket"
+    it_behaves_like "a non-persistent ionian socket"
   end
   
   
@@ -126,7 +133,7 @@ describe Ionian::Socket do
     
     specify { subject.instance_variable_get(:@socket).class.should eq UNIXSocket }
     
-    it_behaves_like "a persistent socket"
+    it_behaves_like "a persistent ionian socket"
   end
   
   
@@ -138,7 +145,7 @@ describe Ionian::Socket do
     its(:persistent?) { should eq false }
     its(:closed?)     { should eq true }
     
-    it_behaves_like "a non-persistent socket"
+    it_behaves_like "a non-persistent ionian socket"
   end
   
   
@@ -153,7 +160,7 @@ describe Ionian::Socket do
     specify { subject.instance_variable_get(:@socket).class.should eq UDPSocket }
     
     it "behaves like a persistent socket"
-    # it_behaves_like "a persistent socket" # pending
+    # it_behaves_like "a persistent ionian socket" # pending
   end
   
   
@@ -167,7 +174,7 @@ describe Ionian::Socket do
     
     # It ignores the non-persistent flag and...
     it "behaves like a persistent socket"
-    # it_behaves_like "a persistent socket" # pending
+    # it_behaves_like "a persistent ionian socket" # pending
   end
   
   # it "can open a send-and-forget TCP client (closes after TX)"
