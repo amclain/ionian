@@ -2,6 +2,7 @@ require 'ionian/extension/io'
 require 'socket'
 require 'timeout'
 
+
 shared_context "listener socket" do |extension|
   
   def wait_until(timeout_time=1)
@@ -51,6 +52,45 @@ shared_context "listener socket" do |extension|
     @client = nil
     @ionian = @object = nil
     @server_thread = nil
+  end
+  
+end
+
+
+shared_context "unix listener socket" do
+  
+  before do
+    # Unix socket test server.
+    @unix_socket_file = '/tmp/ionian.test.sock'
+    File.delete @unix_socket_file if File.exists? @unix_socket_file
+    @unix_server = UNIXServer.new @unix_socket_file
+    
+    @unix_server_thread = Thread.new do
+      loop do
+        begin
+          break if @unix_server.closed?
+          new_request = ::IO.select [@unix_server], nil, nil
+          
+          if new_request
+            @unix_client.close if @unix_client and not @unix_client.closed?
+            @unix_client = @unix_server.accept.extend Ionian::Extension::Socket
+          end
+        rescue Exception
+          break
+        end
+      end
+    end
+    
+    # wait_until { @unix_client }
+  end
+  
+  after do
+    @unix_server.close if @unix_server and not @unix_server.closed?
+    @unix_server = nil
+    File.delete @unix_socket_file if File.exists? @unix_socket_file
+    
+    @unix_server_thread.kill if @unix_server_thread
+    Timeout.timeout 1 do; @unix_server_thread.join; end
   end
   
 end
