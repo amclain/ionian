@@ -77,7 +77,7 @@ describe Ionian::Socket do
   after { subject.close if subject.respond_to? :close and not subject.closed? }
   
   describe "with only host and port arguments given" do
-    include_context "listener socket", Ionian::Extension::Socket
+    include_context "tcp listener socket", Ionian::Extension::Socket
     
     include_examples "ionian interface"
     include_examples "socket extension interface"
@@ -91,7 +91,7 @@ describe Ionian::Socket do
   
   
   describe "with protocol: :tcp" do
-    include_context "listener socket", Ionian::Extension::Socket
+    include_context "tcp listener socket", Ionian::Extension::Socket
     let(:kwargs) {{ host: 'localhost', port: port, protocol: :tcp }}
     
     its(:protocol?)   { should eq :tcp }
@@ -105,7 +105,7 @@ describe Ionian::Socket do
   
   
   describe "with protocol: :tcp, persistent: false" do
-    include_context "listener socket", Ionian::Extension::Socket
+    include_context "tcp listener socket", Ionian::Extension::Socket
     let(:kwargs) {{ host: 'localhost', port: port, protocol: :tcp, persistent: false }}
     
     its(:protocol?)   { should eq :tcp }

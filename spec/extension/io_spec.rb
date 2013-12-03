@@ -4,7 +4,6 @@ require 'ionian/extension/io'
 require 'socket'
 require 'timeout'
 
-Thread.abort_on_exception = true
 
 describe Ionian::Extension::IO do
   

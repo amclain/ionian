@@ -3,6 +3,7 @@ require 'extension/ionian_interface'
 require 'extension/socket_extension_interface'
 require 'ionian/extension/socket'
 
+
 describe Ionian::Extension::Socket do
   
   include_context "ionian subject", Ionian::Extension::Socket
