@@ -68,16 +68,16 @@ module Ionian
       # buffer for the next #read_match cycle. This is helpful for protocols
       # like RS232 that do not have packet boundries.
       #
-      # kvargs:
+      # kwargs:
       #   timeout:        Timeout in seconds IO::select will block.
       #   skip_select:    Skip over the IO::select statement. Use if you
       #                   are calling IO::select ahead of this method.
       #   build_methods:  Build method accessors from named captures.
       #                   Enabled by default.
-      def read_match(**kvargs, &block)
-        timeout       = kvargs.fetch :timeout, @ionian_timeout
-        skip_select   = kvargs.fetch :skip_select, @ionian_skip_select
-        build_methods = kvargs.fetch :build_methods, @ionian_build_methods
+      def read_match(**kwargs, &block)
+        timeout       = kwargs.fetch :timeout, @ionian_timeout
+        skip_select   = kwargs.fetch :skip_select, @ionian_skip_select
+        build_methods = kwargs.fetch :build_methods, @ionian_build_methods
         
         unless skip_select
           return nil unless ::IO.select [self], nil, nil, timeout
@@ -113,13 +113,13 @@ module Ionian
       end
      
       # Start a thread that checks for data and notifies listeners (do |match, socket|).
-      # Passes kvargs to #read_match.
+      # Passes kwargs to #read_match.
       # This method SHOULD NOT be used if #read_match is used.
-      def run_match(**kvargs)
+      def run_match(**kwargs)
         @match_listener ||= Thread.new do
           begin
             while not closed? do
-                matches = read_match kvargs
+                matches = read_match kwargs
                 matches.each {|match|
                   @ionian_listeners.each {|listener| listener.call match, self}
                 } if matches

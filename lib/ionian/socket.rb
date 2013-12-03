@@ -3,14 +3,14 @@ require 'ionian/extension/socket'
 module Ionian
   class Socket
     
-    def initialize(**kvargs)
+    def initialize(**kwargs)
       @socket         = nil
       
-      @host           = kvargs.fetch :host
-      @port           = kvargs.fetch :port, 23
-      @expression     = kvargs.fetch :expression, nil
-      @protocol       = kvargs.fetch :protocol, :tcp
-      @persistent     = kvargs.fetch :persistent, true
+      @host           = kwargs.fetch :host
+      @port           = kwargs.fetch :port, 23
+      @expression     = kwargs.fetch :expression, nil
+      @protocol       = kwargs.fetch :protocol, :tcp
+      @persistent     = kwargs.fetch :persistent, true
       
       create_socket if @persistent
     end
@@ -29,12 +29,12 @@ module Ionian
     # Send a command (data) to the socket. Returns received matches.
     # Block yields received match.
     # See Ionian::Extension::IO#read_match
-    def cmd(string, **kvargs, &block)
+    def cmd(string, **kwargs, &block)
       create_socket unless @persistent
       @socket.write string
       @socket.flush
       
-      matches = @socket.read_match(kvargs) {|match| yield match if block_given?}
+      matches = @socket.read_match(kwargs) {|match| yield match if block_given?}
       @socket.close unless @persistent
       
       matches
@@ -47,9 +47,9 @@ module Ionian
     # Args:
     #   Timeout: Number of seconds to wait for data until
     #     giving up. Set to nil for blocking.
-    def has_data?(**kvargs)
+    def has_data?(**kwargs)
       return false unless @socket
-      @socket.has_data? kvargs
+      @socket.has_data? kwargs
     end
     
     # Returns true if the socket is closed.
