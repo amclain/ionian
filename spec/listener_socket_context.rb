@@ -10,8 +10,6 @@ shared_context "listener socket" do |extension|
     @server = TCPServer.new @port
     
     @server_thread = Thread.new do
-      @server_thread_started = Thread.new {}
-      
       loop do
         begin
           break if @server.closed?
@@ -34,10 +32,8 @@ shared_context "listener socket" do |extension|
     
     @ionian.expression = /(?<cmd>\w+)\s+(?<param>\d+)\s+(?<value>\d+)\s*?[\r\n]+/
     
-    # This prevents the tests from running until the server
-    # thread has started.
-    @server_thread.wakeup
-    Timeout.timeout 1 do; @server_thread_started.join; end
+    # This prevents the tests from running until the client is created
+    Timeout.timeout 1 do Thread.pass until @client end
   end
   
   after do
@@ -45,7 +41,7 @@ shared_context "listener socket" do |extension|
     @client.close if @client and not @client.closed?
     @server.close if @server and not @server.closed?
     @server_thread.kill if @server_thread
-    Timeout.timeout 1 do; @server_thread.join; end
+    Timeout.timeout 1 do @server_thread.join end
     
     @server = nil
     @client = nil
