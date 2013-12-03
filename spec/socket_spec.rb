@@ -177,26 +177,26 @@ describe Ionian::Socket do
     # it_behaves_like "a persistent ionian socket" # pending
   end
   
-  # it "can open a send-and-forget TCP client (closes after TX)"
+  it "can open a send-and-forget TCP client (closes after TX)"
   
-  # it "can open a send-and-forget Unix client (closes after TX)"
+  it "can open a send-and-forget Unix client (closes after TX)"
   
-  # it "ignores the send-and-forget flag for UDP sockets"
+  it "ignores the send-and-forget flag for UDP sockets"
   
-  # it "can send a TCP command and receive a response"
+  it "can send a TCP command and receive a response"
   
-  # it "can send a UDP command and receive a response"
+  it "can send a UDP command and receive a response"
   
-  # it "can send a Unix socket command and receive a response"
+  it "can send a Unix socket command and receive a response"
   
   
-  # it "can send a TCP command and receive a response - persistent" do
+  it "can send a TCP command and receive a response - persistent"# do
   #   pending
     
   #   data = 'tcp command test'
   #   subject.cmd(data).should eq (data + "\n")
   # end
   
-  # it "can send a TCP command and receive a response - non-persistent"
+  it "can send a TCP command and receive a response - non-persistent"
   
 end
