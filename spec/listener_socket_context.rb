@@ -21,7 +21,7 @@ shared_context "listener socket" do |extension|
           
           if new_request
             @client.close if @client and not @client.closed?
-            @client = @server.accept
+            @client = @server.accept.extend Ionian::Extension::Socket
           end
         rescue Exception
           break
