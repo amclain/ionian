@@ -11,6 +11,41 @@ describe Ionian::Socket do
   include_context "listener socket", Ionian::Extension::Socket
   
   before do
+    # Unix socket test server.
+    @unix_socket_file = '/tmp/ionian.test.sock'
+    File.delete @unix_socket_file if File.exists? @unix_socket_file
+    @unix_server = UNIXServer.new @unix_socket_file
+    
+    @unix_server_thread = Thread.new do
+      loop do
+        begin
+          break if @unix_server.closed?
+          new_request = ::IO.select [@unix_server], nil, nil
+          
+          if new_request
+            @unix_client.close if @unix_client and not @unix_client.closed?
+            @unix_client = @unix_server.accept.extend Ionian::Extension::Socket
+          end
+        rescue Exception
+          break
+        end
+      end
+    end
+    
+    # wait_until { @unix_client }
+  end
+  
+  after do
+    @unix_server.close if @unix_server and not @unix_server.closed?
+    @unix_server = nil
+    File.delete @unix_socket_file if File.exists? @unix_socket_file
+    
+    @unix_server_thread.kill if @unix_server_thread
+    Timeout.timeout 1 do; @unix_server_thread.join; end
+  end
+  
+  
+  before do
     # Object under test.
     @socket = @object = Ionian::Socket.new \
       host: 'localhost',
@@ -22,63 +57,11 @@ describe Ionian::Socket do
       port: @port,
       protocol: :tcp,
       persistent: false
-    
-    # Unix socket test server.
-    @unix_socket_file = '/tmp/ionian.test.sock'
-    File.delete @unix_socket_file if File.exists? @unix_socket_file
-    @unix_server = UNIXServer.new @unix_socket_file
-    
-    @unix_server_thread = Thread.new do
-      @unix_server_thread_started = Thread.new {}
-      
-      begin
-        @unix_client = @unix_server.accept.extend Ionian::Extension::Socket
-      rescue
-      end
-      
-      # TODO:
-      # 
-      # No idea why this doesn't work. TCP socket in
-      # listener_socket_context.rb uses the exact same
-      # code and it's fine.
-      # 
-      # Also, "if @unix_server_thread_started" shouldn't
-      # be necessary below -- the variable should be initialized
-      # when the unix_server_thread wakes up.
-      #
-      # Remove the "@unix_client = @unix_server.accept" code above
-      # when this issue is fixed.
-      
-      # loop do
-      #   begin
-      #     break if @unix_server.closed?
-      #     new_request = ::IO.select [@unix_server], nil, nil
-          
-      #     if new_request
-      #       @unix_client.close if @unix_client and not @unix_client.closed?
-      #       @unix_client = @unix_server.accept
-      #       @unix_client.extend Ionian::Extension::Socket
-      #     end
-      #   rescue Exception
-      #     break
-      #   end
-      # end
-    end
-    
-    @unix_server_thread.wakeup
-    Timeout.timeout 1 do; @unix_server_thread_started.join; end if @unix_server_thread_started
   end
   
   after do
     @socket.close if @socket and not @socket.closed?
     @socket = @object = nil
-    
-    @unix_server.close if @unix_server and not @unix_server.closed?
-    @unix_server = nil
-    File.delete @unix_socket_file if File.exists? @unix_socket_file
-    
-    @unix_server_thread.kill if @unix_server_thread
-    Timeout.timeout 1 do; @unix_server_thread.join; end
   end
   
   include_examples "ionian interface"
@@ -162,13 +145,10 @@ describe Ionian::Socket do
     @socket.write data
     @socket.flush
     
-    sleep 0.1
-    @unix_client.extend Ionian::Extension::Socket
-    @unix_client.has_data?.should eq true
+    wait_until { @unix_client and @unix_client.has_data? }
     @unix_client.readpartial(0xFFFF).should eq data
 
     # Socket should still be open.
-    sleep 0.1
     @socket.closed?.should eq false
   end
   
