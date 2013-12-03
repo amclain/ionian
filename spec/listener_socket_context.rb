@@ -8,12 +8,31 @@ def wait_until(timeout_time=1)
 end
 
 
-shared_context "listener socket" do |extension|
+shared_context "ionian subject" do |extension|
+  include_context "listener socket"
+  
+  subject { @ionian }
   
   before do
-    @port = 5050
+    @ionian = TCPSocket.new 'localhost', port
     
-    @server = TCPServer.new @port
+    # Can set the extension when including the context.
+    @ionian.extend extension || Ionian::Extension::IO
+    
+    @ionian.expression = /(?<cmd>\w+)\s+(?<param>\d+)\s+(?<value>\d+)\s*?[\r\n]+/
+    
+    # This prevents the tests from running until the client is created
+    wait_until { @client }
+  end
+end
+
+
+shared_context "listener socket" do |extension|
+  
+  let(:port) { 5050 }
+  
+  before do
+    @server = TCPServer.new port
     
     @server_thread = Thread.new do
       loop do
@@ -31,15 +50,6 @@ shared_context "listener socket" do |extension|
       end
     end
     
-    @ionian = @object = TCPSocket.new 'localhost', @port
-    
-    # Can set the extension when including the context.
-    @ionian.extend extension || Ionian::Extension::IO
-    
-    @ionian.expression = /(?<cmd>\w+)\s+(?<param>\d+)\s+(?<value>\d+)\s*?[\r\n]+/
-    
-    # This prevents the tests from running until the client is created
-    wait_until { @client }
   end
   
   after do
@@ -47,7 +57,7 @@ shared_context "listener socket" do |extension|
     @client.close if @client and not @client.closed?
     @server.close if @server and not @server.closed?
     @server_thread.kill if @server_thread
-    wait_until { @server_thread.join }
+    wait_until { @server_thread.join } if @server_thread
     
     @server = nil
     @client = nil
@@ -60,11 +70,12 @@ end
 
 shared_context "unix listener socket" do
   
+  let(:socket_file) { '/tmp/ionian.test.sock' }
+  
   before do
     # Unix socket test server.
-    @socket_file = '/tmp/ionian.test.sock'
-    File.delete @socket_file if File.exists? @socket_file
-    @server = UNIXServer.new @socket_file
+    File.delete socket_file if File.exists? socket_file
+    @server = UNIXServer.new socket_file
     
     @server_thread = Thread.new do
       loop do
@@ -88,10 +99,17 @@ shared_context "unix listener socket" do
   after do
     @server.close if @server and not @server.closed?
     @server = nil
-    File.delete @socket_file if File.exists? @socket_file
+    File.delete socket_file if File.exists? socket_file
     
     @server_thread.kill if @server_thread
     Timeout.timeout 1 do; @server_thread.join; end
   end
+  
+end
+
+
+shared_context "udp listener socket" do |extension|
+  
+  let(:port) { 5050 }
   
 end
