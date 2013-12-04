@@ -7,4 +7,9 @@ require 'ionian/socket'
 # serial streams like the console and RS232. Features
 # regular expression matching and notification of
 # received data.
-module Ionian; end
+module Ionian
+  
+  # A collection of mixins.
+  module Extension; end
+  
+end
