@@ -31,7 +31,13 @@ module Ionian
     # See Ionian::Extension::IO#read_match
     def cmd(string, **kwargs, &block)
       create_socket unless @persistent
-      @socket.write string
+      
+      if @protocol == :udp
+        @socket.send string, 0
+      else
+        @socket.write string
+      end
+      
       @socket.flush
       
       matches = @socket.read_match(kwargs) {|match| yield match if block_given?}
@@ -74,7 +80,14 @@ module Ionian
     # bytes written.
     def write(string)
       create_socket unless @persistent
-      num_bytes = @socket.write string
+      
+      num_bytes = 0
+      
+      if @protocol == :udp
+        num_bytes = @socket.send string, 0
+      else
+        num_bytes = @socket.write string
+      end
       
       unless @persistent
         # Read in data to prevent RST packets.
@@ -100,6 +113,7 @@ module Ionian
         @socket = ::TCPSocket.new @host, @port
       when :udp
         @socket = ::UDPSocket.new
+        @socket.bind '', @port
         @socket.connect @host, @port
       when :unix
         @socket = ::UNIXSocket.new @host
