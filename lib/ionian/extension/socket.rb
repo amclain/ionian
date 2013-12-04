@@ -18,6 +18,8 @@ module Ionian
         obj.initialize_ionian_socket
       end
       
+      # Initialize the Ionian Socket variables.
+      # This is called automatically if #extend is called on an object.
       def initialize_ionian_socket
       end
       

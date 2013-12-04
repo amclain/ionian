@@ -2,11 +2,11 @@ require 'ionian/extension/io'
 require 'socket'
 require 'timeout'
 
-# Raise exceptions out of child threads to interrupt main thread
+# Raise exceptions out of child threads to interrupt main thread.
 Thread.abort_on_exception = true
 
-# Convenience method for waiting until a condition is true, with a timeout
-def wait_until(timeout:1)
+# Convenience method for waiting until a condition is true, with a timeout.
+def wait_until(timeout: 1)
   Timeout.timeout(timeout) { Thread.pass; Thread.pass until Thread.exclusive { yield } }
 end
 

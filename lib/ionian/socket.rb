@@ -1,16 +1,26 @@
 require 'ionian/extension/socket'
 
 module Ionian
+  
+  # A convenient wrapper for TCP, UDP, and Unix sockets.
   class Socket
     
+    # Args:
+    #   host: IP or hostname to connect to.
+    #   port: Connection's port number. Default is 23. Unused by :unix protocol.
+    #   protocol: Type of socket to create. :tcp, :udp, :unix. Default is :tcp.
+    #   persistent: The socket remains open after data is sent if this is true.
+    #               The socket closes after data is sent and a packet is received
+    #               if this is false. Default is true.
+    #   expression: Overrides the #read_match regular expression for received data.
     def initialize(**kwargs)
       @socket         = nil
       
       @host           = kwargs.fetch :host
       @port           = kwargs.fetch :port, 23
-      @expression     = kwargs.fetch :expression, nil
       @protocol       = kwargs.fetch :protocol, :tcp
       @persistent     = kwargs.fetch :persistent, true
+      @expression     = kwargs.fetch :expression, nil
       
       create_socket if @persistent
     end
@@ -26,9 +36,10 @@ module Ionian
       @persistent == false || @persistent == nil ? false : true
     end
     
-    # Send a command (data) to the socket. Returns received matches.
+    # Send a command (data) to the socket.
+    # Returns an array of received matches.
     # Block yields received match.
-    # See Ionian::Extension::IO#read_match
+    # See Ionian::Extension::IO#read_match.
     def cmd(string, **kwargs, &block)
       create_socket unless @persistent
       
@@ -105,6 +116,7 @@ module Ionian
     
     private
     
+    # Initialize or reinitialize @socket.
     def create_socket
       @socket.close if @socket and not @socket.closed?
       
