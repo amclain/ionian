@@ -19,9 +19,9 @@ module Ionian
       @socket         = nil
       
       @host           = kwargs.fetch :host
-      @port           = kwargs.fetch :port, 23
-      @bind_port           = kwargs.fetch :bind_port, @port
-      @protocol       = kwargs.fetch :protocol, :tcp
+      @port           = kwargs.fetch :port,       23
+      @bind_port      = kwargs.fetch :bind_port,  @port
+      @protocol       = kwargs.fetch :protocol,   :tcp
       @persistent     = kwargs.fetch :persistent, true
       @expression     = kwargs.fetch :expression, nil
       
