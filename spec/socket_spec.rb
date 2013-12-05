@@ -151,7 +151,7 @@ describe Ionian::Socket do
   
   describe "with protocol: :udp" do
     include_context "udp listener socket" # pending
-    let(:kwargs) {{ host: 'localhost', port: port, protocol: :udp }}
+    let(:kwargs) {{ host: 'localhost', port: port, protocol: :udp, bind_port: port + 1 }}
     
     its(:protocol?)   { should eq :udp }
     its(:persistent?) { should eq true }
@@ -159,14 +159,13 @@ describe Ionian::Socket do
     
     specify { subject.instance_variable_get(:@socket).class.should eq UDPSocket }
     
-    it "behaves like a persistent socket"
-    # it_behaves_like "a persistent ionian socket" # pending
+    it_behaves_like "a persistent ionian socket"
   end
   
   
   describe "with protocol: :udp, persistent: false" do
     include_context "udp listener socket" # pending
-    let(:kwargs) {{ host: 'localhost', port: port, protocol: :udp, persistent: false }}
+    let(:kwargs) {{ host: 'localhost', port: port, protocol: :udp, persistent: false, bind_port: port + 1 }}
     
     its(:protocol?)   { should eq :udp }
     its(:persistent?) { should eq false }
@@ -174,7 +173,7 @@ describe Ionian::Socket do
     
     # It ignores the non-persistent flag and...
     it "behaves like a persistent socket"
-    # it_behaves_like "a persistent ionian socket" # pending
+    # it_behaves_like "a persistent ionian socket"
   end
   
   it "can open a send-and-forget TCP client (closes after TX)"
@@ -183,7 +182,7 @@ describe Ionian::Socket do
   
   it "ignores the send-and-forget flag for UDP sockets"
   
-  it "can send a TCP command and receive a response"
+  it "ignores the persistent flag for UDP sockets"
   
   it "can send a UDP command and receive a response"
   

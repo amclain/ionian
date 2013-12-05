@@ -69,9 +69,24 @@ end
 
 
 shared_context "udp listener socket" do
-  let(:port) { 5050 }
-  # let(:server) {...}
-  # include_context "listener socket"
+  let(:port)   { 5050 }
+  let(:server) { UDPSocket.new }
+  let(:client) { server }
+  
+  before do
+    @server = server
+    @client = client
+    
+    server.extend Ionian::Extension::Socket
+    server.bind '', port
+  end
+  
+  after do
+    @server.close if @server and not @server.closed?
+    @server = nil
+    @client = nil
+  end
+  
 end
 
 
@@ -85,7 +100,7 @@ shared_context "ionian subject" do |extension|
     # Can set the extension when including the context.
     @ionian.extend extension || Ionian::Extension::IO
     
-    @ionian.expression = /(?<cmd>\w+)\s+(?<param>\d+)\s+(?<value>\d+)\s*?[\r\n]+/
+    @ionian.expression = /(?<cmd>\w+)\s+(?<param>\d+)\s+(?<value>\d+)\s*?\r?\n?/
     
     # This prevents the tests from running until the client is created
     wait_until { @client }
@@ -95,4 +110,5 @@ shared_context "ionian subject" do |extension|
     @ionian.close if @ionian and not @ionian.closed?
     @ionian = nil
   end
+  
 end
