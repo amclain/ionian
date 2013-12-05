@@ -21,7 +21,7 @@ module Ionian
       def initialize_ionian
         @ionian_listeners     = []
         @ionian_buf           = ''
-        @ionian_expression    = /(.*?)\n/
+        @ionian_expression    = /(.*?)\r?\n?/
         @ionian_timeout       = nil
         @ionian_skip_select   = false
         @ionian_build_methods = true
