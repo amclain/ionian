@@ -12,12 +12,15 @@ module Ionian
     #   persistent: The socket remains open after data is sent if this is true.
     #               The socket closes after data is sent and a packet is received
     #               if this is false. Default is true.
+    #   bind_port: Local UDP port to bind to for receiving data, if different than
+    #              the remote port being connected to.
     #   expression: Overrides the #read_match regular expression for received data.
     def initialize(**kwargs)
       @socket         = nil
       
       @host           = kwargs.fetch :host
       @port           = kwargs.fetch :port, 23
+      @bind_port           = kwargs.fetch :bind_port, @port
       @protocol       = kwargs.fetch :protocol, :tcp
       @persistent     = kwargs.fetch :persistent, true
       @expression     = kwargs.fetch :expression, nil
@@ -125,7 +128,7 @@ module Ionian
         @socket = ::TCPSocket.new @host, @port
       when :udp
         @socket = ::UDPSocket.new
-        @socket.bind '', @port
+        @socket.bind '', @bind_port
         @socket.connect @host, @port
       when :unix
         @socket = ::UNIXSocket.new @host
