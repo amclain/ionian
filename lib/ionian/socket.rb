@@ -130,7 +130,7 @@ module Ionian
         @socket = ::TCPSocket.new @host, @port
       when :udp
         @socket = ::UDPSocket.new
-        @socket.bind '', @bind_port
+        @socket.bind ::Socket::INADDR_ANY, @bind_port
         @socket.connect @host, @port
       when :unix
         @socket = ::UNIXSocket.new @host
