@@ -48,14 +48,22 @@ module Ionian
       alias_method :multicast?, :multicast
       
       def multicast=(value)
+        # TODO: Flags for IPv6 are different.
+        
         if value == true
+          # TODO: Set appropriate scope value.
+          #       See "Unix Network Programming", p.490
           self.setsockopt ::Socket::IPPROTO_IP, ::Socket::IP_TTL, [1].pack('i')
           
+          # TODO: See "Unix Network Programming", p.496
           self.setsockopt \
             ::Socket::IPPROTO_IP,
             ::Socket::IP_ADD_MEMBERSHIP,
             IPAddr.new(self.remote_address.ip_address).hton + IPAddr.new('0.0.0.0').hton
           
+          # TODO: This option needs to happen before the socket is bound.
+          #       It's also useful on TCP sockets, especially on a server.
+          #       See "The Linux Programming Interface", p.1280
           self.setsockopt ::Socket::SOL_SOCKET, ::Socket::SO_REUSEADDR, [1].pack('i')
         else
           # TODO: Implement disabling multicast.
