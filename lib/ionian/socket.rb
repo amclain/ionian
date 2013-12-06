@@ -27,6 +27,9 @@ module Ionian
       @expression     = kwargs.fetch :expression, nil
       
       create_socket if @persistent
+      
+      # TODO: Multicast should automatically be enabled if
+      # protocol is UDP and the IP is in the multicast range.
       self.multicast = true if kwargs.fetch :multicast, false
     end
         
