@@ -78,7 +78,7 @@ shared_context "udp listener socket" do
     @client = client
     
     server.extend Ionian::Extension::Socket
-    server.bind '', port
+    server.bind Socket::INADDR_ANY, port
   end
   
   after do
