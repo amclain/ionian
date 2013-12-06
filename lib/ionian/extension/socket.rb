@@ -1,5 +1,6 @@
 require 'ionian/extension/io'
 require 'socket'
+require 'ipaddr'
 
 module Ionian
   module Extension
@@ -30,11 +31,35 @@ module Ionian
         nagle_disabled > 0 ? true : false
       end
       
+      alias_method :no_delay?, :no_delay
+      
       # Setting to true enables the TCP_NODELAY flag (disables Nagle).
       # Setting to false disables the flag (enables Nagle).
       def no_delay=(value)
         disable_nagle = value ? 1 : 0
         self.setsockopt ::Socket::IPPROTO_TCP, ::Socket::TCP_NODELAY, disable_nagle
+      end
+      
+      def multicast
+        # TODO: Implement.
+        false
+      end
+      
+      alias_method :multicast?, :multicast
+      
+      def multicast=(value)
+        if value == true
+          self.setsockopt ::Socket::IPPROTO_IP, ::Socket::IP_TTL, [1].pack('i')
+          
+          self.setsockopt \
+            ::Socket::IPPROTO_IP,
+            ::Socket::IP_ADD_MEMBERSHIP,
+            IPAddr.new(self.remote_address.ip_address).hton + IPAddr.new('0.0.0.0').hton
+          
+          self.setsockopt ::Socket::SOL_SOCKET, ::Socket::SO_REUSEADDR, [1].pack('i')
+        else
+          # TODO: Implement disabling multicast.
+        end
       end
       
     end

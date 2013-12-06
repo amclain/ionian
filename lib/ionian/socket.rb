@@ -12,6 +12,7 @@ module Ionian
     #   persistent: The socket remains open after data is sent if this is true.
     #               The socket closes after data is sent and a packet is received
     #               if this is false. Default is true.
+    #   multicast: Set true to subscribe the socket to receive multicast traffic.
     #   bind_port: Local UDP port to bind to for receiving data, if different than
     #              the remote port being connected to.
     #   expression: Overrides the #read_match regular expression for received data.
@@ -26,6 +27,7 @@ module Ionian
       @expression     = kwargs.fetch :expression, nil
       
       create_socket if @persistent
+      self.multicast = true if kwargs.fetch :multicast, false
     end
         
     # Returns a symbol of the type of protocol this socket uses:
