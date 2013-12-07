@@ -24,6 +24,17 @@ module Ionian
       def initialize_ionian_socket
       end
       
+      def reuse_addr
+        # TODO: Implement
+        false
+      end
+      
+      alias_method :reuse_addr?, :reuse_addr
+      
+      def reuse_addr=(value)
+        # TODO: Implement
+      end
+      
       # Returns true if the TCP_NODELAY flag is enabled (Nagle disabled).
       # Otherwise false.
       def no_delay
@@ -39,6 +50,131 @@ module Ionian
         disable_nagle = value ? 1 : 0
         self.setsockopt ::Socket::IPPROTO_TCP, ::Socket::TCP_NODELAY, disable_nagle
       end
+      
+      def cork
+        # TODO: Implement
+        false
+      end
+      
+      alias_method :cork?, :cork
+      
+      def cork=(value)
+        # TODO: Implement
+      end
+      
+     def ip_add_membership
+        # TODO: Implement
+        false
+      end
+      
+      alias_method :ip_add_membership?, :ip_add_membership
+      
+      def ip_add_membership=(value)
+        # TODO: Implement
+      end 
+      
+      def ip_drop_membership
+        # TODO: Implement
+        false
+      end
+      
+      alias_method :ip_drop_membership?, :ip_drop_membership
+      
+      def ip_drop_membership=(value)
+        # TODO: Implement
+      end
+      
+      def ip_multicast_if
+        # TODO: Implement
+        false
+      end
+      
+      alias_method :ip_multicast_if?, :ip_multicast_if
+      
+      def ip_multicast_if=(value)
+        # TODO: Implement
+      end
+      
+      def ip_multicast_ttl
+        # TODO: Implement
+        false
+      end
+      
+      alias_method :ip_multicast_ttl?, :ip_multicast_ttl
+      
+      def ip_multicast_ttl=(value)
+        # TODO: Implement
+      end
+      
+      def ip_multicast_loop
+        # TODO: Implement
+        false
+      end
+      
+      alias_method :ip_multicast_loop?, :ip_multicast_loop
+      
+      def ip_multicast_loop=(value)
+        # TODO: Implement
+      end
+      
+      def ipv6_add_membership
+        # TODO: Implement
+        false
+      end
+      
+      alias_method :ipv6_add_membership?, :ipv6_add_membership
+      
+      def ipv6_add_membership=(value)
+        # TODO: Implement
+      end
+      
+      def ipv6_drop_membership
+        # TODO: Implement
+        false
+      end
+      
+      alias_method :ipv6_drop_membership?, :ipv6_drop_membership
+      
+      def ipv6_drop_membership=(value)
+        # TODO: Implement
+      end
+      
+      def ipv6_multicast_if
+        # TODO: Implement
+        false
+      end
+      
+      alias_method :ipv6_multicast_if?, :ipv6_multicast_if
+      
+      def ipv6_multicast_if=(value)
+        # TODO: Implement
+      end
+      
+      def ipv6_multicast_hops
+        # TODO: Implement
+        false
+      end
+      
+      alias_method :ipv6_multicast_hops?, :ipv6_multicast_hops
+      
+      def ipv6_multicast_hops=(value)
+        # TODO: Implement
+      end
+      
+      def ipv6_multicast_loop
+        # TODO: Implement
+        false
+      end
+      
+      alias_method :ipv6_multicast_loop?, :ipv6_multicast_loop
+      
+      def ipv6_multicast_loop=(value)
+        # TODO: Implement
+      end
+      
+      
+      
+      
       
       def multicast
         # TODO: Implement.

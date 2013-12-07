@@ -13,14 +13,11 @@ describe Ionian::Extension::Socket do
   
   
   it "provides accessors for tcp_nodelay" do
-    subject.should respond_to :no_delay
-    subject.should respond_to :no_delay=
-    
     subject.no_delay = true
-    subject.no_delay.should eq true
+    subject.no_delay?.should eq true
     
     subject.no_delay = false
-    subject.no_delay.should eq false
+    subject.no_delay?.should eq false
   end
   
 end
