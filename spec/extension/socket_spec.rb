@@ -12,6 +12,19 @@ describe Ionian::Extension::Socket do
   include_examples "socket extension interface"
   
   
+  describe "can determine if an address is in the multicast range" do
+    subject { Ionian::Extension::Socket }
+    
+    specify { subject.should respond_to :multicast }
+    specify { subject.should respond_to :multicast? }
+    
+    specify { subject.multicast('224.0.0.0').should eq true }
+    specify { subject.multicast('239.255.255.255').should eq true }
+    specify { subject.multicast('239.192.0.1').should eq true }
+    specify { subject.multicast('192.168.0.1').should eq false }
+    specify { subject.multicast('0.0.0.0').should eq false }
+  end
+  
   it "provides accessors for reuse_addr" do
     subject.reuse_addr = true
     subject.reuse_addr?.should eq true
