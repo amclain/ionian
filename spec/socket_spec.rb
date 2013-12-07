@@ -180,7 +180,8 @@ describe Ionian::Socket do
   
   describe "with protocol: :udp, multicast" do
     include_context "udp listener socket"
-    let(:kwargs) {{ host: '224.0.0.5', port: port, protocol: :udp }}
+    # UDP protocol is implicit for a multicast address.
+    let(:kwargs) {{ host: '224.0.0.5', port: port }}
     
     subject { Ionian::Socket.new **kwargs }
     

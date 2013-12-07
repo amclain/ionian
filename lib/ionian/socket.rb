@@ -22,10 +22,19 @@ module Ionian
     def initialize(**kwargs)
       @socket         = nil
       
+      # TODO: Should be able to parse the port out of host.
+      #       :port should override this parsed value.
+      
       @host           = kwargs.fetch :host
       @port           = kwargs.fetch :port,       23
       @bind_port      = kwargs.fetch :bind_port,  @port
-      @protocol       = kwargs.fetch :protocol,   :tcp
+      
+      # Automatically select UDP for the multicast range. Otherwise default to TCP.
+      default_protocol = :tcp
+      default_protocol = :udp  if Ionian::Extension::Socket.multicast? @host
+      default_protocol = :unix if @host.start_with? '/'
+      
+      @protocol       = kwargs.fetch :protocol,   default_protocol
       @persistent     = kwargs.fetch :persistent, true
       @expression     = kwargs.fetch :expression, nil
       
