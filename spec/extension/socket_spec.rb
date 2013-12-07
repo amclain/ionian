@@ -12,12 +12,20 @@ describe Ionian::Extension::Socket do
   include_examples "socket extension interface"
   
   
-  it "provides accessors for tcp_nodelay" do
+  it "provides accessors for no_delay" do
     subject.no_delay = true
     subject.no_delay?.should eq true
     
     subject.no_delay = false
     subject.no_delay?.should eq false
+  end
+  
+  it "provides accessors for reuse_addr" do
+    subject.reuse_addr = true
+    subject.reuse_addr?.should eq true
+    
+    subject.reuse_addr = false
+    subject.reuse_addr?.should eq false
   end
   
 end

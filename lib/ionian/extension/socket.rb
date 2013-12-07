@@ -24,31 +24,36 @@ module Ionian
       def initialize_ionian_socket
       end
       
+      # Returns true if local address reuse is allowed.
+      # ( SO_REUSEADDR )
       def reuse_addr
-        # TODO: Implement
-        false
+        param = self.getsockopt(::Socket::SOL_SOCKET, ::Socket::SO_REUSEADDR).data.unpack('i').first
+        param > 0 ? true : false
       end
       
       alias_method :reuse_addr?, :reuse_addr
       
+      # Allows local address reuse if true.
+      # ( SO_REUSEADDR )
       def reuse_addr=(value)
-        # TODO: Implement
+        param = value ? 1 : 0
+        self.setsockopt ::Socket::SOL_SOCKET, ::Socket::SO_REUSEADDR, [param].pack('i')
       end
       
-      # Returns true if the TCP_NODELAY flag is enabled (Nagle disabled).
-      # Otherwise false.
+      # Returns true if the Nagle algorithm is disabled.
+      # ( TCP_NODELAY )
       def no_delay
-        nagle_disabled = self.getsockopt(::Socket::IPPROTO_TCP, ::Socket::TCP_NODELAY).data.ord
-        nagle_disabled > 0 ? true : false
+        param = self.getsockopt(::Socket::IPPROTO_TCP, ::Socket::TCP_NODELAY).data.unpack('i').first
+        param > 0 ? true : false
       end
       
       alias_method :no_delay?, :no_delay
       
-      # Setting to true enables the TCP_NODELAY flag (disables Nagle).
-      # Setting to false disables the flag (enables Nagle).
+      # Disables the Nagle algorithm if true.
+      # ( TCP_NODELAY )
       def no_delay=(value)
-        disable_nagle = value ? 1 : 0
-        self.setsockopt ::Socket::IPPROTO_TCP, ::Socket::TCP_NODELAY, disable_nagle
+        param = value ? 1 : 0
+        self.setsockopt ::Socket::IPPROTO_TCP, ::Socket::TCP_NODELAY, [param].pack('i')
       end
       
       def cork
@@ -184,7 +189,7 @@ module Ionian
       alias_method :multicast?, :multicast
       
       def multicast=(value)
-        # TODO: Flags for IPv6 are different.
+        # TODO: params for IPv6 are different.
         
         if value == true
           # TODO: Set appropriate scope value.
