@@ -56,15 +56,24 @@ module Ionian
         self.setsockopt ::Socket::IPPROTO_TCP, ::Socket::TCP_NODELAY, [param].pack('i')
       end
       
+      # Returns true if multiple writes are buffered into a single segment.
+      # Linux only.
       def cork
-        # TODO: Implement
-        false
+        param = self.getsockopt(::Socket::IPPROTO_TCP, ::Socket::TCP_CORK).data.unpack('i').first
+        param > 0 ? true : false
       end
       
       alias_method :cork?, :cork
       
+      # Buffers multiple writes into a single segment if true.
+      # The segment is sent once the cork flag is disabled,
+      # the upper limit on the size of a segment is reached,
+      # the socket is closed, or 200ms elapses from the time
+      # the first corked byte is written.
+      # Linux only.
       def cork=(value)
-        # TODO: Implement
+        param = value ? 1 : 0
+        self.setsockopt ::Socket::IPPROTO_TCP, ::Socket::TCP_CORK, [param].pack('i')
       end
       
      def ip_add_membership

@@ -28,4 +28,12 @@ describe Ionian::Extension::Socket do
     subject.reuse_addr?.should eq false
   end
   
+  it "provides accessors for cork" do
+    subject.cork = true
+    subject.cork?.should eq true
+    
+    subject.cork = false
+    subject.cork?.should eq false
+  end
+  
 end
