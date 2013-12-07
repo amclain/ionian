@@ -125,12 +125,14 @@ module Ionian
       end
       
       # Returns the default interface for outgoing multicasts.
+      # ( IP_MULTICAST_IF )
       def ip_multicast_if
         self.getsockopt(::Socket::IPPROTO_IP, ::Socket::IP_MULTICAST_IF)
-          .data.unpack('cccc').join('.')
+          .data.unpack('CCCC').join('.')
       end
       
       # Specify default interface for outgoing multicasts.
+      # ( IP_MULTICAST_IF )
       def ip_multicast_if=(interface = nil)
         interface ||= '0.0.0.0'
         
@@ -140,15 +142,17 @@ module Ionian
           IPAddr.new(interface).hton
       end
       
+      # Returns the time to live (hop limit) for outgoing multicasts.
+      # ( IP_MULTICAST_TTL )
       def ip_multicast_ttl
-        # TODO: Implement
-        false
+        self.getsockopt(::Socket::IPPROTO_IP, ::Socket::IP_MULTICAST_TTL)
+          .data.unpack('C').first
       end
       
-      alias_method :ip_multicast_ttl?, :ip_multicast_ttl
-      
+      # Set the time to live (hop limit) for outgoing multicasts.
+      # ( IP_MULTICAST_TTL )
       def ip_multicast_ttl=(value)
-        # TODO: Implement
+        self.setsockopt ::Socket::IPPROTO_IP, ::Socket::IP_MULTICAST_TTL, [value].pack('C')
       end
       
       def ip_multicast_loop
@@ -185,8 +189,6 @@ module Ionian
         # TODO: Implement
         false
       end
-      
-      alias_method :ipv6_multicast_hops?, :ipv6_multicast_hops
       
       def ipv6_multicast_hops=(value)
         # TODO: Implement

@@ -54,6 +54,14 @@ describe Ionian::Extension::Socket do
       subject.ip_multicast_if = '0.0.0.0'
       subject.ip_multicast_if.should eq '0.0.0.0'
     end
+    
+    it "provides accessors for ip_multicast_ttl" do
+      subject.ip_multicast_ttl = 1
+      subject.ip_multicast_ttl.should eq 1
+      
+      subject.ip_multicast_ttl = 128
+      subject.ip_multicast_ttl.should eq 128
+    end
   end
   
 end
