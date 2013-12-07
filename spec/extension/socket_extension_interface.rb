@@ -25,7 +25,6 @@ shared_examples "socket extension interface" do
   it { should respond_to :ip_drop_membership }
   
   it { should respond_to :ip_multicast_if  }
-  it { should respond_to :ip_multicast_if? }
   it { should respond_to :ip_multicast_if= }
   
   it { should respond_to :ip_multicast_ttl  }
@@ -43,7 +42,6 @@ shared_examples "socket extension interface" do
   it { should respond_to :ipv6_drop_membership  }
   
   it { should respond_to :ipv6_multicast_if  }
-  it { should respond_to :ipv6_multicast_if? }
   it { should respond_to :ipv6_multicast_if= }
   
   it { should respond_to :ipv6_multicast_hops  }

@@ -124,15 +124,20 @@ module Ionian
             IPAddr.new(address).hton + IPAddr.new(interface).hton
       end
       
+      # Returns the default interface for outgoing multicasts.
       def ip_multicast_if
-        # TODO: Implement
-        false
+        self.getsockopt(::Socket::IPPROTO_IP, ::Socket::IP_MULTICAST_IF)
+          .data.unpack('cccc').join('.')
       end
       
-      alias_method :ip_multicast_if?, :ip_multicast_if
-      
-      def ip_multicast_if=(value)
-        # TODO: Implement
+      # Specify default interface for outgoing multicasts.
+      def ip_multicast_if=(interface = nil)
+        interface ||= '0.0.0.0'
+        
+        self.setsockopt \
+          ::Socket::IPPROTO_IP,
+          ::Socket::IP_MULTICAST_IF,
+          IPAddr.new(interface).hton
       end
       
       def ip_multicast_ttl
@@ -171,8 +176,6 @@ module Ionian
         # TODO: Implement
         false
       end
-      
-      alias_method :ipv6_multicast_if?, :ipv6_multicast_if
       
       def ipv6_multicast_if=(value)
         # TODO: Implement

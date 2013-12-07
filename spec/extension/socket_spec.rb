@@ -44,4 +44,16 @@ describe Ionian::Extension::Socket do
     subject.cork?.should eq false
   end
   
+  describe "with UDP socket" do
+    subject { UDPSocket.new.extend Ionian::Extension::Socket }
+    
+    it "provides accessors for ip_multicast_if" do
+      subject.ip_multicast_if = '127.0.0.1'
+      subject.ip_multicast_if.should eq '127.0.0.1'
+      
+      subject.ip_multicast_if = '0.0.0.0'
+      subject.ip_multicast_if.should eq '0.0.0.0'
+    end
+  end
+  
 end

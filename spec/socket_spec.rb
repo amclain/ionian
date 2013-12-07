@@ -150,7 +150,7 @@ describe Ionian::Socket do
   
   
   describe "with protocol: :udp" do
-    include_context "udp listener socket" # pending
+    include_context "udp listener socket"
     let(:kwargs) {{ host: 'localhost', port: port, protocol: :udp, bind_port: port + 1 }}
     
     its(:protocol?)   { should eq :udp }
@@ -164,7 +164,7 @@ describe Ionian::Socket do
   
   
   describe "with protocol: :udp, persistent: false" do
-    include_context "udp listener socket" # pending
+    include_context "udp listener socket"
     let(:kwargs) {{ host: 'localhost', port: port, protocol: :udp, persistent: false, bind_port: port + 1 }}
     
     its(:protocol?)   { should eq :udp }
