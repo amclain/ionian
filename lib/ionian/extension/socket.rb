@@ -27,7 +27,8 @@ module Ionian
       # Returns true if local address reuse is allowed.
       # ( SO_REUSEADDR )
       def reuse_addr
-        param = self.getsockopt(::Socket::SOL_SOCKET, ::Socket::SO_REUSEADDR).data.unpack('i').first
+        param = self.getsockopt(::Socket::SOL_SOCKET, ::Socket::SO_REUSEADDR)
+          .data.unpack('i').first
         param > 0 ? true : false
       end
       
@@ -43,7 +44,8 @@ module Ionian
       # Returns the time to live (hop limit).
       # ( IP_TTL )
       def ttl
-        self.getsockopt(::Socket::IPPROTO_IP, ::Socket::IP_TTL).data.unpack('i').first
+        self.getsockopt(::Socket::IPPROTO_IP, ::Socket::IP_TTL)
+          .data.unpack('i').first
       end
       
       alias_method :ttl?, :ttl
@@ -57,7 +59,8 @@ module Ionian
       # Returns true if the Nagle algorithm is disabled.
       # ( TCP_NODELAY )
       def no_delay
-        param = self.getsockopt(::Socket::IPPROTO_TCP, ::Socket::TCP_NODELAY).data.unpack('i').first
+        param = self.getsockopt(::Socket::IPPROTO_TCP, ::Socket::TCP_NODELAY)
+          .data.unpack('i').first
         param > 0 ? true : false
       end
       
@@ -71,10 +74,12 @@ module Ionian
       end
       
       # Returns true if multiple writes are buffered into a single segment.
+      # See #recork.
       # Linux only.
       # ( TCP_CORK )
       def cork
-        param = self.getsockopt(::Socket::IPPROTO_TCP, ::Socket::TCP_CORK).data.unpack('i').first
+        param = self.getsockopt(::Socket::IPPROTO_TCP, ::Socket::TCP_CORK)
+          .data.unpack('i').first
         param > 0 ? true : false
       end
       
@@ -85,11 +90,19 @@ module Ionian
       # the upper limit on the size of a segment is reached,
       # the socket is closed, or 200ms elapses from the time
       # the first corked byte is written.
+      # See #recork.
       # Linux only.
       # ( TCP_CORK )
       def cork=(value)
         param = value ? 1 : 0
         self.setsockopt ::Socket::IPPROTO_TCP, ::Socket::TCP_CORK, [param].pack('i')
+      end
+      
+      # Unsets cork to transmit data, then reapplies cork.
+      # ( TCP_CORK )
+      def recork
+        self.setsockopt ::Socket::IPPROTO_TCP, ::Socket::TCP_CORK, [0].pack('i')
+        self.setsockopt ::Socket::IPPROTO_TCP, ::Socket::TCP_CORK, [1].pack('i')
       end
       
       # Join a multicast group.

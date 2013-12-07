@@ -18,6 +18,8 @@ shared_examples "socket extension interface" do
   it { should respond_to :cork? }
   it { should respond_to :cork= }
   
+  it { should respond_to :recork }
+  
   # IPv4 Multicast
   
   it { should respond_to :ip_add_membership }
