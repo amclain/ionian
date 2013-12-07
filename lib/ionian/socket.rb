@@ -9,7 +9,7 @@ module Ionian
     #   host:       IP or hostname to connect to.
     #   port:       Connection's port number. Default is 23. Unused by :unix protocol.
     #   protocol:   Type of socket to create. :tcp, :udp, :unix. Default is :tcp.
-    #               :udp will automatically be selected for addresses in the multicast range.
+    #               :udp will be automatically selected for addresses in the multicast range.
     #   persistent: The socket remains open after data is sent if this is true.
     #               The socket closes after data is sent and a packet is received
     #               if this is false. Default is true.
