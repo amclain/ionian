@@ -40,6 +40,20 @@ module Ionian
         self.setsockopt ::Socket::SOL_SOCKET, ::Socket::SO_REUSEADDR, [param].pack('i')
       end
       
+      # Returns the time to live (hop limit).
+      # ( IP_TTL )
+      def ttl
+        self.getsockopt(::Socket::IPPROTO_IP, ::Socket::IP_TTL).data.unpack('i').first
+      end
+      
+      alias_method :ttl?, :ttl
+      
+      # Sets the time to live (hop limit).
+      # ( IP_TTL )
+      def ttl=(value)
+        self.setsockopt ::Socket::IPPROTO_IP, ::Socket::IP_TTL, [value].pack('i')
+      end
+      
       # Returns true if the Nagle algorithm is disabled.
       # ( TCP_NODELAY )
       def no_delay
@@ -83,21 +97,9 @@ module Ionian
         false
       end
       
-      alias_method :ip_add_membership?, :ip_add_membership
-      
-      def ip_add_membership=(value)
-        # TODO: Implement
-      end 
-      
       def ip_drop_membership
         # TODO: Implement
         false
-      end
-      
-      alias_method :ip_drop_membership?, :ip_drop_membership
-      
-      def ip_drop_membership=(value)
-        # TODO: Implement
       end
       
       def ip_multicast_if
@@ -138,21 +140,9 @@ module Ionian
         false
       end
       
-      alias_method :ipv6_add_membership?, :ipv6_add_membership
-      
-      def ipv6_add_membership=(value)
-        # TODO: Implement
-      end
-      
       def ipv6_drop_membership
         # TODO: Implement
         false
-      end
-      
-      alias_method :ipv6_drop_membership?, :ipv6_drop_membership
-      
-      def ipv6_drop_membership=(value)
-        # TODO: Implement
       end
       
       def ipv6_multicast_if
