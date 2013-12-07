@@ -92,14 +92,36 @@ module Ionian
         self.setsockopt ::Socket::IPPROTO_TCP, ::Socket::TCP_CORK, [param].pack('i')
       end
       
-     def ip_add_membership
-        # TODO: Implement
-        false
+      # Join a multicast group.
+      # Address is the class D multicast address (uses remote
+      # address if not specified). 
+      # Interface is the local network interface to receive the
+      # multicast traffic on (all interfaces if not specified).
+      # ( IP_ADD_MEMBERSHIP )
+     def ip_add_membership(address = nil, interface = nil)
+        address   ||= self.remote_address.ip_address
+        interface ||= '0.0.0.0'
+        
+        self.setsockopt \
+            ::Socket::IPPROTO_IP,
+            ::Socket::IP_ADD_MEMBERSHIP,
+            IPAddr.new(address).hton + IPAddr.new(interface).hton
       end
       
-      def ip_drop_membership
-        # TODO: Implement
-        false
+      # Leave a multicast group.
+      # Address is the class D multicast address (uses remote
+      # address if not specified). 
+      # Interface is the local network interface the multicast
+      # traffic is received on (all interfaces if not specified).
+      # ( IP_DROP_MEMBERSHIP )
+      def ip_drop_membership(address = nil, interface = nil)
+        address   ||= self.remote_address.ip_address
+        interface ||= '0.0.0.0'
+        
+        self.setsockopt \
+            ::Socket::IPPROTO_IP,
+            ::Socket::IP_DROP_MEMBERSHIP,
+            IPAddr.new(address).hton + IPAddr.new(interface).hton
       end
       
       def ip_multicast_if
