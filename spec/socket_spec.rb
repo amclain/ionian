@@ -156,6 +156,7 @@ describe Ionian::Socket do
     its(:protocol?)   { should eq :udp }
     its(:persistent?) { should eq true }
     its(:closed?)     { should eq false }
+    its(:multicast?)  { should eq false }
     
     specify { subject.instance_variable_get(:@socket).class.should eq UDPSocket }
     
@@ -175,6 +176,21 @@ describe Ionian::Socket do
     it "behaves like a persistent socket"
     # it_behaves_like "a persistent ionian socket"
   end
+  
+  
+  describe "with protocol: :udp, multicast" do
+    include_context "udp listener socket"
+    let(:kwargs) {{ host: '224.0.0.5', port: port, protocol: :udp }}
+    
+    subject { Ionian::Socket.new **kwargs }
+    
+    its(:protocol?)   { should eq :udp }
+    its(:persistent?) { should eq true }
+    its(:closed?)     { should eq false }
+    its(:multicast?)  { should eq true }
+    its(:reuse_addr?) { should eq true }
+  end
+  
   
   it "can open a send-and-forget TCP client (closes after TX)"
   
