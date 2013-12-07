@@ -6,15 +6,18 @@ module Ionian
   class Socket
     
     # Args:
-    #   host: IP or hostname to connect to.
-    #   port: Connection's port number. Default is 23. Unused by :unix protocol.
-    #   protocol: Type of socket to create. :tcp, :udp, :unix. Default is :tcp.
+    #   host:       IP or hostname to connect to.
+    #   port:       Connection's port number. Default is 23. Unused by :unix protocol.
+    #   protocol:   Type of socket to create. :tcp, :udp, :unix. Default is :tcp.
     #   persistent: The socket remains open after data is sent if this is true.
     #               The socket closes after data is sent and a packet is received
     #               if this is false. Default is true.
-    #   multicast: Set true to subscribe the socket to receive multicast traffic.
-    #   bind_port: Local UDP port to bind to for receiving data, if different than
-    #              the remote port being connected to.
+    #   bind_port:  Local UDP port to bind to for receiving data, if different than
+    #               the remote port being connected to.
+    #   reuse_addr: Set true to enable the SO_REUSEADDR flag. Allows local address reuse.
+    #   no_delay:   Set true to enable the TCP_NODELAY flag. Disables Nagle algorithm.
+    #   cork:       Set true to enable the TCP_CORK flag. Buffers multiple writes
+    #               into one segment.
     #   expression: Overrides the #read_match regular expression for received data.
     def initialize(**kwargs)
       @socket         = nil
@@ -26,11 +29,11 @@ module Ionian
       @persistent     = kwargs.fetch :persistent, true
       @expression     = kwargs.fetch :expression, nil
       
-      create_socket if @persistent
+      @reuse_addr     = kwargs.fetch :reuse_addr, false
+      @no_delay       = kwargs.fetch :no_delay,   false
+      @cork           = kwargs.fetch :cork,       false
       
-      # TODO: Multicast should automatically be enabled if
-      # protocol is UDP and the IP is in the multicast range.
-      self.multicast = true if kwargs.fetch :multicast, false
+      create_socket if @persistent
     end
         
     # Returns a symbol of the type of protocol this socket uses:
@@ -131,15 +134,30 @@ module Ionian
       case @protocol
       when :tcp
         @socket = ::TCPSocket.new @host, @port
+        @socket.extend Ionian::Extension::Socket
+        @socket.no_delay = true if @no_delay
+        @socket.cork = true if @cork
+        
       when :udp
         @socket = ::UDPSocket.new
+        @socket.extend Ionian::Extension::Socket
+        
+        @socket.reuse_addr = true if
+          @reuse_addr or Ionian::Extension::Socket.multicast? @host
+        
         @socket.bind ::Socket::INADDR_ANY, @bind_port
         @socket.connect @host, @port
+        
+        @socket.ip_add_membership if Ionian::Extension::Socket.multicast? @host
+        
       when :unix
         @socket = ::UNIXSocket.new @host
+        @socket.extend Ionian::Extension::Socket
       end
       
-      @socket.extend Ionian::Extension::Socket
+      # TODO: Implement SO_LINGER flag for non-persistent sockets;
+      #       especially send-and-forget.
+      
       @socket.expression = @expression if @expression
       
       initialize_socket_methods
