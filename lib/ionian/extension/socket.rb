@@ -155,15 +155,21 @@ module Ionian
         self.setsockopt ::Socket::IPPROTO_IP, ::Socket::IP_MULTICAST_TTL, [value].pack('C')
       end
       
+      # Returns true if loopback of outgoing multicasts is enabled.
+      # ( IP_MULTICAST_LOOP )
       def ip_multicast_loop
-        # TODO: Implement
-        false
+        param = self.getsockopt(::Socket::IPPROTO_IP, ::Socket::IP_MULTICAST_LOOP)
+          .data.unpack('C').first
+        param > 0 ? true : false
       end
       
       alias_method :ip_multicast_loop?, :ip_multicast_loop
       
+      # Enables loopback of outgoing multicasts if true.
+      # ( IP_MULTICAST_LOOP )
       def ip_multicast_loop=(value)
-        # TODO: Implement
+        param = value ? 1 : 0
+        self.setsockopt ::Socket::IPPROTO_IP, ::Socket::IP_MULTICAST_LOOP, [param].pack('C')
       end
       
       def ipv6_add_membership
