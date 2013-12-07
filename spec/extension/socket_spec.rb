@@ -42,6 +42,9 @@ describe Ionian::Extension::Socket do
     
     subject.cork = false
     subject.cork?.should eq false
+    
+    subject.recork
+    subject.cork?.should eq true
   end
   
   describe "with UDP socket" do
