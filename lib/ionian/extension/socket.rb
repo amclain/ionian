@@ -58,6 +58,7 @@ module Ionian
       
       # Returns true if multiple writes are buffered into a single segment.
       # Linux only.
+      # ( TCP_CORK )
       def cork
         param = self.getsockopt(::Socket::IPPROTO_TCP, ::Socket::TCP_CORK).data.unpack('i').first
         param > 0 ? true : false
@@ -71,6 +72,7 @@ module Ionian
       # the socket is closed, or 200ms elapses from the time
       # the first corked byte is written.
       # Linux only.
+      # ( TCP_CORK )
       def cork=(value)
         param = value ? 1 : 0
         self.setsockopt ::Socket::IPPROTO_TCP, ::Socket::TCP_CORK, [param].pack('i')
