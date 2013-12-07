@@ -62,6 +62,14 @@ describe Ionian::Extension::Socket do
       subject.ip_multicast_ttl = 128
       subject.ip_multicast_ttl.should eq 128
     end
+    
+    it "provides accessors for ip_multicast_loop" do
+      subject.ip_multicast_loop = true
+      subject.ip_multicast_loop?.should eq true
+      
+      subject.ip_multicast_loop = false
+      subject.ip_multicast_loop?.should eq false
+    end
   end
   
 end
