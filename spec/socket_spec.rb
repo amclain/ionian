@@ -183,8 +183,6 @@ describe Ionian::Socket do
     # UDP protocol is implicit for a multicast address.
     let(:kwargs) {{ host: '224.0.0.5', port: port }}
     
-    subject { Ionian::Socket.new **kwargs }
-    
     its(:protocol?)   { should eq :udp }
     its(:persistent?) { should eq true }
     its(:closed?)     { should eq false }
