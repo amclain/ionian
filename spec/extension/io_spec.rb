@@ -99,4 +99,6 @@ describe Ionian::Extension::IO do
     block_run.should eq true
   end
   
+  it "can set the match expression in a #read_match kwarg"
+  
 end

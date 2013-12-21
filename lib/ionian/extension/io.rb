@@ -72,7 +72,7 @@ module Ionian
       #   timeout:        Timeout in seconds IO::select will block.
       #   skip_select:    Skip over the IO::select statement. Use if you
       #                   are calling IO::select ahead of this method.
-      #   build_methods:  Build method accessors from named captures.
+      #   build_methods:  Build accessor methods from named capture groups.
       #                   Enabled by default.
       def read_match(**kwargs, &block)
         timeout       = kwargs.fetch :timeout, @ionian_timeout
