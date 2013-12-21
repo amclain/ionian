@@ -120,6 +120,17 @@ describe Ionian::Socket do
     its(:closed?)     { should eq true }
     
     it_behaves_like "a non-persistent ionian socket"
+    
+    it "can set the match expression outside the initializer" do
+      expression = /my-expression\n/
+      subject.expression = expression
+      subject.expression.should eq expression
+    end
+    
+    it "can register on_match handlers" do
+      subject.on_match do; end
+      pending
+    end
   end
   
   
