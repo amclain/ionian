@@ -222,6 +222,10 @@ describe Ionian::Socket do
   #   subject.cmd(data).should eq (data + "\n")
   # end
   
+  
+  # TODO: #cmd can set the read_match expression in a kwarg.
+  
+  
   it "can send a TCP command and receive a response - non-persistent"
   
 end
