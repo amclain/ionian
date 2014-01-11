@@ -99,6 +99,14 @@ describe Ionian::Extension::IO do
     block_run.should eq true
   end
   
+  it "can read all of the data in the buffer" do
+    data = "read all works"
+    subject.write data
+    subject.flush
+    
+    @client.read_all.should eq data
+  end
+  
   it "can set the match expression in a #read_match kwarg"
   
 end
