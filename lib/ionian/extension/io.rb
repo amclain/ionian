@@ -51,6 +51,12 @@ module Ionian
         @ionian_expression = Regexp.new "(.*?)#{expression}" if exp.is_a? String
       end
       
+      # Read all data in the buffer.
+      # An alternative to using #readpartial with a large length.
+      def read_all
+        readpartial 0xFFFFFFFF
+      end
+      
       # Read matched data from the buffer.
       # This method SHOULD NOT be used if #run_match is used.
       #
