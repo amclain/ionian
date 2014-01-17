@@ -83,6 +83,7 @@ describe Ionian::Socket do
   subject { Ionian::Socket.new **kwargs }
   after { subject.close if subject.respond_to? :close and not subject.closed? }
   
+  
   describe "with only host and port arguments given" do
     include_context "tcp listener socket"
     
