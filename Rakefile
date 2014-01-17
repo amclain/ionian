@@ -8,7 +8,7 @@ RSpec::Core::RakeTask.new :test do |c|
   c.rspec_opts = 
     '--color '\
     '--format Fivemat '\
-    '--fail-fast'
+    # '--fail-fast'
 end
 
 # Build the gem.

@@ -4,6 +4,7 @@ module Ionian
   
   # A convenient wrapper for TCP, UDP, and Unix sockets.
   class Socket
+    attr_accessor :expression
     
     # Args:
     #   host:       IP or hostname to connect to.
@@ -43,6 +44,8 @@ module Ionian
       @no_delay       = kwargs.fetch :no_delay,   false
       @cork           = kwargs.fetch :cork,       false
       
+      @ionian_listeners = []
+      
       create_socket if @persistent
     end
         
@@ -78,6 +81,24 @@ module Ionian
       matches
     end
     
+    # Register a block to be called when #run_match receives matched data.
+    # Method callbacks can be registered with &object.method(:method).
+    # Returns a reference to the given block.
+    # block = ionian_socket.register_observer {...}
+    def register_observer &block
+      @ionian_listeners << block unless @ionian_listeners.include? block
+      @socket.register_observer &block if @socket
+      block
+    end
+    
+    alias_method :on_match, :register_observer
+    
+    # Unregister a block from being called when matched data is received.
+    def unregister_observer(&block)
+      @ionian_listeners.delete_if {|o| o == block}
+      @socket.unregister_observer &block if @socket
+      block
+    end
     
     ### Methods Forwarded To @socket ###
     
@@ -145,6 +166,7 @@ module Ionian
       when :tcp
         @socket = ::TCPSocket.new @host, @port
         @socket.extend Ionian::Extension::Socket
+        @socket.expression = @expression if @expression
         @socket.no_delay = true if @no_delay
         @socket.cork = true if @cork
         
@@ -169,6 +191,9 @@ module Ionian
       #       especially send-and-forget.
       
       @socket.expression = @expression if @expression
+      
+      # Register listeners.
+      @ionian_listeners.each { |proc| @socket.on_match &proc }
       
       initialize_socket_methods
     end

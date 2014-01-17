@@ -54,7 +54,7 @@ module Ionian
       # Read all data in the buffer.
       # An alternative to using #readpartial with a large length.
       def read_all
-        readpartial 0xFFFFFFFF
+        readpartial 0xFFFF
       end
       
       # Read matched data from the buffer.
