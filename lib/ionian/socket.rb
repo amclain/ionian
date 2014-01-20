@@ -2,7 +2,7 @@ require 'ionian/extension/socket'
 
 module Ionian
   
-  # A convenient wrapper for TCP, UDP, and Unix sockets.
+  # A convenient wrapper for TCP, UDP, and Unix client sockets.
   class Socket
     attr_accessor :expression
     
