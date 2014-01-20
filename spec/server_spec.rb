@@ -2,11 +2,18 @@ require 'ionian/server'
 require 'ionian/socket'
 require 'timeout'
 
-require 'listener_socket_context'
+# require 'listener_socket_context'
 require 'extension/ionian_interface'
 require 'extension/socket_extension_interface'
 
 describe Ionian::Server do
+  
+  let (:kwargs) {{ port: 5051 }}
+  
+  subject { Ionian::Server.new **kwargs }
+  
+  after { subject.close }
+  
   
   it { should respond_to :listen }
   it { should respond_to :close }
@@ -20,11 +27,17 @@ describe Ionian::Server do
     it "can register in initialization block" do
       client = nil
       
-      server = Ionian::Server.new do |c|
+      server = Ionian::Server.new **kwargs do |c|
         client = c
       end
       
       server.listen
+      
+      # Create client connection.
+      remote_client = TCPSocket.new 'localhost', kwargs[:port]
+      sleep 0.1
+      
+      remote_client.close
       server.close
       
       client.should be_an Ionian::Socket
