@@ -84,6 +84,29 @@ describe Ionian::Socket do
   after { subject.close if subject.respond_to? :close and not subject.closed? }
   
   
+  describe do
+    include_context "tcp listener socket"
+    
+    let (:existing_socket) { TCPSocket.new 'localhost', kwargs[:port] }
+    subject { Ionian::Socket.new existing_socket }
+    
+    after {
+      existing_socket.close unless existing_socket.closed?
+      subject.close unless subject.closed?
+    }
+    
+    
+    it "can convert an existing tcp socket" do
+      subject.should be_an Ionian::Socket
+      subject.closed?.should be false
+    end
+    
+    it "can convert an existing udp socket"
+    
+    it "can convert an existing unix socket"
+  end
+  
+  
   describe "with only host and port arguments given" do
     include_context "tcp listener socket"
     

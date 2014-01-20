@@ -21,32 +21,56 @@ module Ionian
     #   cork:       Set true to enable the TCP_CORK flag. Buffers multiple writes
     #               into one segment.
     #   expression: Overrides the #read_match regular expression for received data.
-    def initialize(**kwargs)
-      @socket         = nil
-      
-      # TODO: Should be able to parse the port out of host.
-      #       :port should override this parsed value.
-      
-      @host           = kwargs.fetch :host
-      @port           = kwargs.fetch :port,       23
-      @bind_port      = kwargs.fetch :bind_port,  @port
-      
-      # Automatically select UDP for the multicast range. Otherwise default to TCP.
-      default_protocol = :tcp
-      default_protocol = :udp  if Ionian::Extension::Socket.multicast? @host
-      default_protocol = :unix if @host.start_with? '/'
-      
-      @protocol       = kwargs.fetch :protocol,   default_protocol
-      @persistent     = kwargs.fetch :persistent, true
-      @expression     = kwargs.fetch :expression, nil
-      
-      @reuse_addr     = kwargs.fetch :reuse_addr, false
-      @no_delay       = kwargs.fetch :no_delay,   false
-      @cork           = kwargs.fetch :cork,       false
+    def initialize(existing_socket = nil, **kwargs)
+      @socket = existing_socket
       
       @ionian_listeners = []
       
-      create_socket if @persistent
+      if existing_socket
+        # Convert existing socket.
+        @socket.extend Ionian::Extension::IO
+        @socket.extend Ionian::Extension::Socket
+        
+        @host = existing_socket.remote_address.ip_address if existing_socket
+        @port = existing_socket.remote_address.ip_port if existing_socket
+        # @bind_port      = kwargs.fetch :bind_port,  @port
+      
+        # Automatically select UDP for the multicast range. Otherwise default to TCP.
+        # default_protocol = :tcp
+        # default_protocol = :udp  if Ionian::Extension::Socket.multicast? @host
+        # default_protocol = :unix if @host.start_with? '/'
+        
+        # @protocol       = kwargs.fetch :protocol,   default_protocol
+        # @persistent     = kwargs.fetch :persistent, true
+        # @expression     = kwargs.fetch :expression, nil
+        
+        # @reuse_addr     = kwargs.fetch :reuse_addr, false
+        # @no_delay       = kwargs.fetch :no_delay,   false
+        # @cork           = kwargs.fetch :cork,       false
+      else
+        # TODO: Should be able to parse the port out of host.
+        #       :port should override this parsed value.
+        
+        @host           = kwargs.fetch :host unless existing_socket
+        @port           = kwargs.fetch :port,       23
+        @bind_port      = kwargs.fetch :bind_port,  @port
+      
+        # Automatically select UDP for the multicast range. Otherwise default to TCP.
+        default_protocol = :tcp
+        default_protocol = :udp  if Ionian::Extension::Socket.multicast? @host
+        default_protocol = :unix if @host.start_with? '/'
+        
+        @protocol       = kwargs.fetch :protocol,   default_protocol
+        @persistent     = kwargs.fetch :persistent, true
+        @expression     = kwargs.fetch :expression, nil
+        
+        @reuse_addr     = kwargs.fetch :reuse_addr, false
+        @no_delay       = kwargs.fetch :no_delay,   false
+        @cork           = kwargs.fetch :cork,       false
+      
+        
+        create_socket if @persistent
+     end
     end
         
     # Returns a symbol of the type of protocol this socket uses:
