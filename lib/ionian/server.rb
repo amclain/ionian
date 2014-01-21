@@ -11,11 +11,26 @@ module Ionian
       register_accept_listener &block if block_given?
       
       @interface = kwargs.fetch :interface, ''
-      @port      = kwargs.fetch :port
-      @protocol  = kwargs.fetch :protocol, :tcp
+      @port      = kwargs.fetch :port, nil
+      
+      
+      # Automatically select UDP for the multicast range. Otherwise default to TCP.
+      default_protocol = :tcp
+      # TODO: This ivar may be incorrect for UDP -- bound interface is not destination.
+      default_protocol = :udp  if Ionian::Extension::Socket.multicast? @interface
+      default_protocol = :unix if @interface.start_with? '/'
+      
+      @protocol  = kwargs.fetch :protocol, default_protocol
       
       # TODO: Needs to account for different protocols.
-      @server   = TCPServer.new @port
+      case @protocol
+      when :tcp
+        @server = TCPServer.new @port
+      when :udp
+        @server = Ionian::Socket.new host: @interface, port: @port, protocol: :udp
+      when :unix
+        @server = UNIXServer.new @interface
+      end
     end
     
     # Starts the socket server listening for connections.

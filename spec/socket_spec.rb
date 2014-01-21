@@ -99,6 +99,8 @@ describe Ionian::Socket do
     it "can convert an existing tcp socket" do
       subject.should be_an Ionian::Socket
       subject.closed?.should be false
+      subject.protocol.should eq :tcp
+      subject.persistent?.should eq true
     end
     
     it "can convert an existing udp socket"
@@ -113,6 +115,7 @@ describe Ionian::Socket do
     include_examples "ionian interface"
     include_examples "socket extension interface"
     
+    its(:protocol)    { should eq :tcp }
     its(:protocol?)   { should eq :tcp }
     its(:persistent?) { should eq true }
     its(:closed?)     { should eq false }
