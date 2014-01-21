@@ -6,6 +6,8 @@ module Ionian
   class Socket
     attr_accessor :expression
     
+    # Creates a new socket or wraps an existing socket.
+    # 
     # Args:
     #   host:       IP or hostname to connect to.
     #   port:       Connection's port number. Default is 23. Unused by :unix protocol.
@@ -26,28 +28,36 @@ module Ionian
       
       @ionian_listeners = []
       
+      @expression = kwargs.fetch :expression, nil
+      
       if existing_socket
         # Convert existing socket.
         @socket.extend Ionian::Extension::IO
         @socket.extend Ionian::Extension::Socket
         
-        @host = existing_socket.remote_address.ip_address if existing_socket
-        @port = existing_socket.remote_address.ip_port if existing_socket
-        # @bind_port      = kwargs.fetch :bind_port,  @port
+        if existing_socket.is_a? UNIXSocket
+          @host = existing_socket.path
+          @port = nil
+        else
+          @host = existing_socket.remote_address.ip_address if existing_socket
+          @port = existing_socket.remote_address.ip_port if existing_socket
+        end
       
-        # Automatically select UDP for the multicast range. Otherwise default to TCP.
-        # default_protocol = :tcp
-        # default_protocol = :udp  if Ionian::Extension::Socket.multicast? @host
-        # default_protocol = :unix if @host.start_with? '/'
+        if @socket.is_a? TCPSocket
+          @protocol = :tcp
+        elsif @socket.is_a? UDPSocket
+          @protocol = :udp
+        elsif @socket.is_a? UNIXSocket
+          @protocol = :unix
+        end
         
-        # @protocol       = kwargs.fetch :protocol,   default_protocol
-        # @persistent     = kwargs.fetch :persistent, true
-        # @expression     = kwargs.fetch :expression, nil
+        @persistent     = true # Existing sockets are always persistent.
         
-        # @reuse_addr     = kwargs.fetch :reuse_addr, false
-        # @no_delay       = kwargs.fetch :no_delay,   false
-        # @cork           = kwargs.fetch :cork,       false
+        @socket.expression = @expression if @expression
+        
       else
+        # Initialize new socket.
+        
         # TODO: Should be able to parse the port out of host.
         #       :port should override this parsed value.
         
@@ -62,7 +72,6 @@ module Ionian
         
         @protocol       = kwargs.fetch :protocol,   default_protocol
         @persistent     = kwargs.fetch :persistent, true
-        @expression     = kwargs.fetch :expression, nil
         
         @reuse_addr     = kwargs.fetch :reuse_addr, false
         @no_delay       = kwargs.fetch :no_delay,   false
@@ -75,9 +84,8 @@ module Ionian
         
     # Returns a symbol of the type of protocol this socket uses:
     # :tcp, :udp, :unix
-    def protocol?
-      @protocol
-    end
+    attr_reader :protocol
+    alias_method :protocol?, :protocol
     
     # Returns true if the socket remains open after writing data.
     def persistent?
