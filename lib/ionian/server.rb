@@ -40,7 +40,7 @@ module Ionian
     def listen &block
       register_accept_listener &block if block_given?
       
-      @accept_thread = Thread.new do
+      @accept_thread ||= Thread.new do
         # Package in an Ionian::Socket
         begin
           client = Ionian::Socket.new @server.accept
