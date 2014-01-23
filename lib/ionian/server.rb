@@ -22,10 +22,11 @@ module Ionian
       
       @protocol  = kwargs.fetch :protocol, default_protocol
       
-      # TODO: Needs to account for different protocols.
+      # TODO: Move this to #listen.
       case @protocol
       when :tcp
-        @server = TCPServer.new @port
+        @server = TCPServer.new @interface, @port
+        @server.setsockopt ::Socket::SOL_SOCKET, ::Socket::SO_REUSEADDR, [1].pack('i')
       when :udp
         @server = Ionian::Socket.new host: @interface, port: @port, protocol: :udp
       when :unix
@@ -36,13 +37,23 @@ module Ionian
     # Starts the socket server listening for connections.
     # Blocks registered with #register_accept_listener will
     # be run when a connection is accepted.
-    def listen
+    def listen &block
+      register_accept_listener &block if block_given?
+      
       @accept_thread = Thread.new do
         # Package in an Ionian::Socket
-        client = Ionian::Socket.new @server.accept
-        
-        @accept_listeners.each do |listener|
-          listener.call client
+        begin
+          client = Ionian::Socket.new @server.accept
+          
+          @accept_listeners.each do |listener|
+            listener.call client
+          end
+        rescue Errno::EBADF
+          # This ignores the connection if the client closed it before it
+          # could be accepted.
+        rescue IOError
+          # This ignores the connection if the client closed it before it
+          # could be accepted.
         end
       end
     end
@@ -50,6 +61,8 @@ module Ionian
     # Shutdown the server socket and stop listening for connections.
     def close
       @server.close if @server
+      @accept_thread.join if @accept_thread
+      @accept_thread = nil
     end
     
     # Register a block to be run when server accepts a client connection.

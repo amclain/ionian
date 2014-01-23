@@ -22,9 +22,9 @@ Gem::Specification.new do |s|
   s.executables = [
   ]
   
-  s.add_development_dependency 'rake'
-  s.add_development_dependency 'rdoc'
-  s.add_development_dependency 'pry'
-  s.add_development_dependency 'rspec'
-  s.add_development_dependency 'fivemat'
+  s.add_development_dependency 'rake',    '~> 0'
+  s.add_development_dependency 'rdoc',    '~> 0'
+  s.add_development_dependency 'pry',     '~> 0'
+  s.add_development_dependency 'rspec',   '~> 0'
+  s.add_development_dependency 'fivemat', '~> 0'
 end

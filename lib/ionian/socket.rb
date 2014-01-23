@@ -55,13 +55,14 @@ module Ionian
         
         @socket.expression = @expression if @expression
         
+        initialize_socket_methods
       else
         # Initialize new socket.
         
         # TODO: Should be able to parse the port out of host.
         #       :port should override this parsed value.
         
-        @host           = kwargs.fetch :host unless existing_socket
+        @host           = kwargs.fetch :host
         @port           = kwargs.fetch :port,       23
         @bind_port      = kwargs.fetch :bind_port,  @port
       
@@ -79,7 +80,7 @@ module Ionian
       
         
         create_socket if @persistent
-     end
+      end
     end
         
     # Returns a symbol of the type of protocol this socket uses:
