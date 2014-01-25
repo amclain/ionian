@@ -13,10 +13,13 @@ end
 
 shared_context "listener socket" do
   
-  let (:client) { clients.first }
+  def client
+    clients.last
+  end
+  
   let (:clients) { [] }
   
-  let (:server_thread) {
+  let! (:server_thread) {
     server
     Thread.new do
       loop do
@@ -26,8 +29,7 @@ shared_context "listener socket" do
           
           Thread.exclusive do
             if new_request
-              @client = server.accept.extend Ionian::Extension::Socket
-              clients << @client
+              clients << server.accept.extend(Ionian::Extension::Socket)
             end
           end
         rescue Exception
@@ -37,15 +39,11 @@ shared_context "listener socket" do
     end
   }
   
-  before { server_thread }
-  
   after {
     clients.each {|c| c.close unless c.closed?}
     server.close unless server.closed?
     server_thread.kill
     Timeout.timeout(1) { server_thread.join }
-    
-    @client = nil
   }
   
 end
@@ -76,13 +74,11 @@ shared_context "udp listener socket" do
   let(:server) { UDPSocket.new }
   let(:client) { server }
   
-  before do
-    @client = client
-    
+  before {
     server.extend Ionian::Extension::Socket
     server.reuse_addr = true
     server.bind Socket::INADDR_ANY, port
-  end
+  }
   
 end
 
@@ -100,7 +96,7 @@ shared_context "ionian subject" do |extension|
     @ionian.expression = /(?<cmd>\w+)\s+(?<param>\d+)\s+(?<value>\d+)\s*?\r?\n?/
     
     # This prevents the tests from running until the client is created
-    wait_until { @client }
+    wait_until { client }
   end
   
   after do
