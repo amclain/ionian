@@ -50,16 +50,16 @@ end
 
 
 shared_context "tcp listener socket" do
-  let(:port)   { 5050 }
-  let(:server) { TCPServer.new port }
+  let (:port)   { 5050 }
+  let (:server) { TCPServer.new port }
   
   include_context "listener socket"
 end
 
 
 shared_context "unix listener socket" do
-  let(:socket_file) { '/tmp/ionian.test.sock' }
-  let(:server)      { 
+  let (:socket_file) { '/tmp/ionian.test.sock' }
+  let (:server)      { 
     File.delete socket_file if File.exists? socket_file
     UNIXServer.new socket_file
   }
@@ -70,14 +70,14 @@ end
 
 
 shared_context "udp listener socket" do
-  let(:port)   { 5050 }
-  let(:server) { UDPSocket.new }
-  let(:client) { server }
-  
-  before {
-    server.extend Ionian::Extension::Socket
-    server.reuse_addr = true
-    server.bind Socket::INADDR_ANY, port
+  let  (:port)   { 5050 }
+  let  (:client) { server }
+  let! (:server) {
+    UDPSocket.new.tap do |s|
+      s.extend Ionian::Extension::Socket
+      s.reuse_addr = true
+      s.bind Socket::INADDR_ANY, port
+    end
   }
   
 end
