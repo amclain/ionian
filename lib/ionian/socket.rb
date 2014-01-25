@@ -73,6 +73,7 @@ module Ionian
         
         @protocol       = kwargs.fetch :protocol,   default_protocol
         @persistent     = kwargs.fetch :persistent, true
+        @persistent     = true if @protocol == :udp
         
         @reuse_addr     = kwargs.fetch :reuse_addr, false
         @no_delay       = kwargs.fetch :no_delay,   false

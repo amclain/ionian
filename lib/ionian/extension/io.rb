@@ -76,14 +76,21 @@ module Ionian
       #
       # kwargs:
       #   timeout:        Timeout in seconds IO::select will block.
+      #   expression:     Override the expression match for this single
+      #                   method call.
+      #   notify:         Set to false to skip notifying match listener procs.
       #   skip_select:    Skip over the IO::select statement. Use if you
       #                   are calling IO::select ahead of this method.
       #   build_methods:  Build accessor methods from named capture groups.
       #                   Enabled by default.
       def read_match(**kwargs, &block)
-        timeout       = kwargs.fetch :timeout, @ionian_timeout
-        skip_select   = kwargs.fetch :skip_select, @ionian_skip_select
-        build_methods = kwargs.fetch :build_methods, @ionian_build_methods
+        timeout       = kwargs.fetch :timeout,        @ionian_timeout
+        notify        = kwargs.fetch :notify,         true
+        skip_select   = kwargs.fetch :skip_select,    @ionian_skip_select
+        build_methods = kwargs.fetch :build_methods,  @ionian_build_methods
+        
+        exp           = kwargs.fetch :expression,     @ionian_expression
+        exp           = Regexp.new "(.*?)#{exp}" if exp.is_a? String
         
         unless skip_select
           return nil unless ::IO.select [self], nil, nil, timeout
@@ -97,7 +104,7 @@ module Ionian
         
         @matches = []
         
-        while @ionian_buf =~ @ionian_expression
+        while @ionian_buf =~ exp
           @matches << $~ # Match data.
           yield $~ if block_given?
           @ionian_buf = $' # Leave post match data in the buffer.
@@ -115,6 +122,9 @@ module Ionian
           end
         end
         
+        # Notify on_match listeners.
+        @matches.each {|match| notify_listeners match} if notify
+        
         @matches
       end
      
@@ -125,10 +135,8 @@ module Ionian
         @match_listener ||= Thread.new do
           begin
             while not closed? do
-                matches = read_match kwargs
-                matches.each {|match|
-                  @ionian_listeners.each {|listener| listener.call match, self}
-                } if matches
+              matches = read_match **kwargs
+              matches.each {|match| notify_listeners match } if matches
             end
           rescue EOFError
           rescue IOError
@@ -164,6 +172,15 @@ module Ionian
       def unregister_observer(&block)
         @ionian_listeners.delete_if {|o| o == block}
         block
+      end
+      
+      
+      private
+      
+      # Send match to each of the registered observers. Includes self
+      # as the second block parameter.
+      def notify_listeners match
+        @ionian_listeners.each {|listener| listener.call match, self}
       end
     
     end

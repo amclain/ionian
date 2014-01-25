@@ -85,9 +85,6 @@ describe Ionian::Socket do
   
   
   describe do
-    include_context "tcp listener socket"
-    
-    let (:existing_socket) { TCPSocket.new 'localhost', kwargs[:port] }
     subject { Ionian::Socket.new existing_socket }
     
     after {
@@ -96,16 +93,45 @@ describe Ionian::Socket do
     }
     
     
-    it "can convert an existing tcp socket" do
-      subject.should be_an Ionian::Socket
-      subject.closed?.should be false
-      subject.protocol.should eq :tcp
-      subject.persistent?.should eq true
+    describe do
+      include_context "tcp listener socket"
+      let (:existing_socket) { TCPSocket.new 'localhost', kwargs[:port] }
+      
+      it "can convert an existing tcp socket" do
+        subject.should be_an Ionian::Socket
+        subject.closed?.should be false
+        subject.protocol.should eq :tcp
+        subject.persistent?.should eq true
+      end
     end
     
-    it "can convert an existing udp socket"
+    describe do
+      include_context "udp listener socket"
+      let (:existing_socket) { 
+        UDPSocket.new.tap do |s|
+          s.connect 'localhost', port
+        end
+      }
+      
+      it "can convert an existing udp socket" do
+        subject.should be_an Ionian::Socket
+        subject.closed?.should be false
+        subject.protocol.should be :udp
+        subject.persistent?.should eq true
+      end
+    end
     
-    it "can convert an existing unix socket"
+    describe do
+      include_context "unix listener socket"
+      let (:existing_socket) { UNIXSocket.new socket_file }
+      
+      it "can convert an existing unix socket" do
+        subject.should be_an Ionian::Socket
+        subject.closed?.should be false
+        subject.protocol.should be :unix
+        subject.persistent?.should eq true
+      end
+    end
   end
   
   
@@ -155,9 +181,31 @@ describe Ionian::Socket do
     end
     
     it "can register on_match handlers" do
-      subject.on_match do; end
+      # Non-persistent sockets seem like they should close after #write.
+      # If the socket needs to receive a response before closing, #cmd
+      # is the tool for the job, and may eliminate the need for a
+      # :send_and_forget flag. This means #cmd should fire off MatchData
+      # to the event handlers as well as returning it.
+      
+      # Non-persistent sockets should act like "send_and_forget: true":
+      #   Data is transmitted and the respose is discarded.
+      # Non-persistent command/response should be implemented using #cmd.
       pending
+      
+      match_triggered = false
+      
+      subject.on_match { match_triggered = true }
+      
+      @client.write "data\n"
+      @client.flush
+      sleep 0.1
+      
+      #   #cmd needs to be called here, but that method can't be tested with
+      # due to blocking.
+      
+      match_triggered.should eq true
     end
+    
   end
   
   
@@ -207,12 +255,11 @@ describe Ionian::Socket do
     let(:kwargs) {{ host: 'localhost', port: port, protocol: :udp, persistent: false, bind_port: port + 1 }}
     
     its(:protocol?)   { should eq :udp }
-    its(:persistent?) { should eq false }
-    its(:closed?)     { should eq true }
+    its(:persistent?) { should eq true } # UDP sockets are always persistent.
+    its(:closed?)     { should eq false }
     
     # It ignores the non-persistent flag and...
-    it "behaves like a persistent socket"
-    # it_behaves_like "a persistent ionian socket"
+    it_behaves_like "a persistent ionian socket"
   end
   
   
@@ -227,32 +274,5 @@ describe Ionian::Socket do
     its(:multicast?)  { should eq true }
     its(:reuse_addr?) { should eq true }
   end
-  
-  
-  it "can open a send-and-forget TCP client (closes after TX)"
-  
-  it "can open a send-and-forget Unix client (closes after TX)"
-  
-  it "ignores the send-and-forget flag for UDP sockets"
-  
-  it "ignores the persistent flag for UDP sockets"
-  
-  it "can send a UDP command and receive a response"
-  
-  it "can send a Unix socket command and receive a response"
-  
-  
-  it "can send a TCP command and receive a response - persistent"# do
-  #   pending
-    
-  #   data = 'tcp command test'
-  #   subject.cmd(data).should eq (data + "\n")
-  # end
-  
-  
-  # TODO: #cmd can set the read_match expression in a kwarg.
-  
-  
-  it "can send a TCP command and receive a response - non-persistent"
   
 end

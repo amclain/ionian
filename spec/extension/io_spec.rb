@@ -24,14 +24,14 @@ describe Ionian::Extension::IO do
   end
   
   it "can purge Ionian's read buffer" do
-    @client.puts 'test data'
+    client.puts 'test data'
     subject.purge
     subject.read_match(timeout: 0).should eq nil
   end
   
   it "can read matched data" do
-    @client.write "CS 1234 1\nCS 4567 0\n"
-    @client.flush
+    client.write "CS 1234 1\nCS 4567 0\n"
+    client.flush
     
     match = subject.read_match
     
@@ -56,8 +56,8 @@ describe Ionian::Extension::IO do
     
     thread = subject.run_match
     
-    @client.write "CS 7890 1\n"
-    @client.flush
+    client.write "CS 7890 1\n"
+    client.flush
     
     sleep 0.1
     thread.kill
@@ -89,8 +89,8 @@ describe Ionian::Extension::IO do
     
     thread = subject.run_match
     
-    @client.write "CS 7890 1\nCS 2345 0\n"
-    @client.flush
+    client.write "CS 7890 1\nCS 2345 0\n"
+    client.flush
     
     sleep 0.1
     thread.kill
@@ -104,9 +104,53 @@ describe Ionian::Extension::IO do
     subject.write data
     subject.flush
     
-    @client.read_all.should eq data
+    client.read_all.should eq data
   end
   
-  it "can set the match expression in a #read_match kwarg"
+  it "can set the match expression in a #read_match kwarg" do
+    expression = /(?<param1>\w+)\s+(?<param2>\w+)\s*[\r\n]+/
+    data = "hello world\n"
+    subject
+    
+    client.write data
+    client.flush
+    sleep 0.1
+    
+    match = subject.read_match expression: expression
+    match = match.first
+    
+    match.param1.should eq 'hello'
+    match.param2.should eq 'world'
+  end
+  
+  it "notifies listeners on #read_match" do
+    data = "CS 1234 65535\n"
+    match_triggered = false
+    
+    subject.on_match { match_triggered = true }
+    
+    client.write data
+    client.flush
+    sleep 0.1
+    
+    match = subject.read_match
+    
+    match_triggered.should eq true
+  end
+  
+  it "does not notify #read_match listeners if notify:false is set" do
+    data = "CS 1234 65535\n"
+    match_triggered = false
+    
+    subject.on_match { match_triggered = true }
+    
+    client.write data
+    client.flush
+    sleep 0.1
+    
+    subject.read_match notify: false
+    
+    match_triggered.should eq false
+  end
   
 end

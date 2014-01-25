@@ -13,18 +13,21 @@ end
 
 shared_context "listener socket" do
   
-  before do
-    @server = server
-    @server_thread = Thread.new do
+  let (:client) { clients.first }
+  let (:clients) { [] }
+  
+  let (:server_thread) {
+    server
+    Thread.new do
       loop do
         begin
-          break if @server.closed?
-          new_request = ::IO.select [@server], nil, nil
+          break if server.closed?
+          new_request = ::IO.select [server], nil, nil
           
           Thread.exclusive do
             if new_request
-              @client.close if @client and not @client.closed?
-              @client = @server.accept.extend Ionian::Extension::Socket
+              @client = server.accept.extend Ionian::Extension::Socket
+              clients << @client
             end
           end
         rescue Exception
@@ -32,18 +35,18 @@ shared_context "listener socket" do
         end
       end
     end
-  end
+  }
   
-  after do
-    @client.close if @client and not @client.closed?
-    @server.close if @server and not @server.closed?
-    @server_thread.kill if @server_thread
-    Timeout.timeout(1) { @server_thread.join } if @server_thread
+  before { server_thread }
+  
+  after {
+    clients.each {|c| c.close unless c.closed?}
+    server.close unless server.closed?
+    server_thread.kill
+    Timeout.timeout(1) { server_thread.join }
     
     @client = nil
-    @server = nil
-    @server_thread = nil
-  end
+  }
   
 end
 
@@ -74,18 +77,11 @@ shared_context "udp listener socket" do
   let(:client) { server }
   
   before do
-    @server = server
     @client = client
     
     server.extend Ionian::Extension::Socket
     server.reuse_addr = true
     server.bind Socket::INADDR_ANY, port
-  end
-  
-  after do
-    @server.close if @server and not @server.closed?
-    @server = nil
-    @client = nil
   end
   
 end

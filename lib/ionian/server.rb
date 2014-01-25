@@ -28,7 +28,7 @@ module Ionian
         @server = TCPServer.new @interface, @port
         @server.setsockopt ::Socket::SOL_SOCKET, ::Socket::SO_REUSEADDR, [1].pack('i')
       when :udp
-        @server = Ionian::Socket.new host: @interface, port: @port, protocol: :udp
+        raise ArgumentError, "UDP should be implemented with Ionian::Socket."
       when :unix
         @server = UNIXServer.new @interface
       end
