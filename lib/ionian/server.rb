@@ -6,6 +6,15 @@ module Ionian
   # A convenient wrapper for TCP, UDP, and Unix server sockets.
   class Server
     
+    # A convenient wrapper for TCP and Unix server sockets (UDP doesn't use
+    # a server).
+    #
+    # Accepts an optional block that is passed to #register_accept_listener.
+    # 
+    # Args:
+    #   interface:      The address of the network interface to bind to.
+    #                   Defaults to all.
+    #   protocol:       :tcp, :unix. Default is :tcp.
     def initialize **kwargs, &block
       @accept_listeners = []
       register_accept_listener &block if block_given?
