@@ -165,6 +165,16 @@ describe Ionian::Socket do
   
   
   describe "with protocol: :tcp, persistent: false" do
+    # Non-persistent sockets seem like they should close after #write.
+    # If the socket needs to receive a response before closing, #cmd
+    # is the tool for the job, and may eliminate the need for a
+    # :send_and_forget flag. This means #cmd should fire off MatchData
+    # to the event handlers as well as returning it.
+    
+    # Non-persistent sockets should act like "send_and_forget: true":
+    #   Data is transmitted and the respose is discarded.
+    # Non-persistent command/response should be implemented using #cmd.
+      
     include_context "tcp listener socket"
     let(:kwargs) {{ host: 'localhost', port: port, protocol: :tcp, persistent: false }}
     
@@ -180,30 +190,38 @@ describe Ionian::Socket do
       subject.expression.should eq expression
     end
     
-    it "can register on_match handlers" do
-      # Non-persistent sockets seem like they should close after #write.
-      # If the socket needs to receive a response before closing, #cmd
-      # is the tool for the job, and may eliminate the need for a
-      # :send_and_forget flag. This means #cmd should fire off MatchData
-      # to the event handlers as well as returning it.
+    it "retains on_match handlers" do
+      # Testing instance variables is a bad method, but the on_match
+      # handlers won't trigger on non-persistent sockets unless #cmd
+      # is called. #cmd can't be used in tests because it blocks before
+      # data can be sent back to the subject socket.
       
-      # Non-persistent sockets should act like "send_and_forget: true":
-      #   Data is transmitted and the respose is discarded.
-      # Non-persistent command/response should be implemented using #cmd.
-      pending
+      # Helper procs.
+      socket_instance = proc{
+        subject.instance_variable_get :@socket
+      }
       
-      match_triggered = false
+      listeners = proc{
+          socket_instance.call.instance_variable_get :@ionian_listeners
+      }
       
-      subject.on_match { match_triggered = true }
+      # Send data, creating the socket instance with no listeners.
+      subject.write "test\n"
+      socket_instance_1 = socket_instance.call
       
-      client.write "data\n"
-      client.flush
-      sleep 0.1
+      listeners.call.count.should eq 0
       
-      #   #cmd needs to be called here, but that method can't be tested with
-      # due to blocking.
+      # Register a match listener.
+      subject.on_match { nil }
+      listeners.call.count.should eq 1
       
-      match_triggered.should eq true
+      # Send more data, creating a new socket instance.
+      subject.write "test\n"
+      socket_instance_2 = socket_instance.call
+      socket_instance_2.should_not eq socket_instance_1
+      
+      # The previous match listener should be passed to the new socket instance.
+      listeners.call.count.should eq 1
     end
     
   end
