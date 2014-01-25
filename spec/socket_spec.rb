@@ -13,16 +13,16 @@ shared_examples "an ionian socket" do
     subject << data
     subject.flush
     
-    wait_until { @client and !@client.closed? and @client.has_data? }
-    @client.readpartial(0xFFFF).should eq data
+    wait_until { client and not client.closed? and client.has_data? }
+    client.readpartial(0xFFFF).should eq data
   end
   
   it "can 'puts' data" do
     data = 'test push method'
     subject.puts data
     
-    wait_until { @client and !@client.closed? and @client.has_data? }
-    @client.readpartial(0xFFFF).should eq "#{data}\n"
+    wait_until { client and not client.closed? and client.has_data? }
+    client.readpartial(0xFFFF).should eq "#{data}\n"
   end
 end
 
@@ -34,8 +34,8 @@ shared_examples "a persistent ionian socket" do
     subject.write data
     subject.flush
     
-    wait_until { @client and !@client.closed? and @client.has_data? }
-    @client.readpartial(0xFFFF).should eq data
+    wait_until { client and not client.closed? and client.has_data? }
+    client.readpartial(0xFFFF).should eq data
     
     # Socket should still be open.
     subject.closed?.should eq false
@@ -55,8 +55,8 @@ shared_examples "a non-persistent ionian socket" do
     # the socket will flush and close on #write.
     subject.flush
     
-    wait_until { @client and !@client.closed? and @client.has_data? }
-    @client.readpartial(0xFFFF).should eq data
+    wait_until { client and not client.closed? and client.has_data? }
+    client.readpartial(0xFFFF).should eq data
     
     # Socket should be closed.
     subject.closed?.should eq true
@@ -65,8 +65,8 @@ shared_examples "a non-persistent ionian socket" do
     data = 'another test'
     subject.write data
     
-    wait_until { @client and !@client.closed? and @client.has_data? }
-    @client.readpartial(0xFFFF).should eq data
+    wait_until { client and not client.closed? and client.has_data? }
+    client.readpartial(0xFFFF).should eq data
     
     # Socket should be closed.
     subject.closed?.should eq true
@@ -196,8 +196,8 @@ describe Ionian::Socket do
       
       subject.on_match { match_triggered = true }
       
-      @client.write "data\n"
-      @client.flush
+      client.write "data\n"
+      client.flush
       sleep 0.1
       
       #   #cmd needs to be called here, but that method can't be tested with
