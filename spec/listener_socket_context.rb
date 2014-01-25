@@ -85,23 +85,17 @@ end
 
 shared_context "ionian subject" do |extension|
   include_context "tcp listener socket"
-  subject { @ionian }
   
-  before do
-    @ionian = TCPSocket.new 'localhost', port
-    
-    # Can set the extension when including the context.
-    @ionian.extend extension || Ionian::Extension::IO
-    
-    @ionian.expression = /(?<cmd>\w+)\s+(?<param>\d+)\s+(?<value>\d+)\s*?\r?\n?/
-    
-    # This prevents the tests from running until the client is created
-    wait_until { client }
-  end
+  let! (:ionian_socket) {
+    TCPSocket.new('localhost', port).tap do |s|
+      s.extend extension || Ionian::Extension::IO
+      s.expression = /(?<cmd>\w+)\s+(?<param>\d+)\s+(?<value>\d+)\s*?\r?\n?/
+      
+      wait_until { client }
+    end
+  }
+  subject { ionian_socket }
   
-  after do
-    @ionian.close if @ionian and not @ionian.closed?
-    @ionian = nil
-  end
+  after { ionian_socket.close unless ionian_socket.closed? }
   
 end
