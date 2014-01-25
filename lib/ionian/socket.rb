@@ -4,6 +4,7 @@ module Ionian
   
   # A convenient wrapper for TCP, UDP, and Unix client sockets.
   class Socket
+    # Returns the regular expression used to match incoming data.
     attr_accessor :expression
     
     # Creates a new socket or wraps an existing socket.

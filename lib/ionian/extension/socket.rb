@@ -185,34 +185,41 @@ module Ionian
         self.setsockopt ::Socket::IPPROTO_IP, ::Socket::IP_MULTICAST_LOOP, [param].pack('C')
       end
       
+      # Not yet implemented.
       def ipv6_add_membership
         # TODO: Implement
         false
       end
       
+      # Not yet implemented.
       def ipv6_drop_membership
         # TODO: Implement
         false
       end
       
+      # Not yet implemented.
       def ipv6_multicast_if
         # TODO: Implement
         false
       end
       
+      # Not yet implemented.
       def ipv6_multicast_if=(value)
         # TODO: Implement
       end
       
+      # Not yet implemented.
       def ipv6_multicast_hops
         # TODO: Implement
         false
       end
       
+      # Not yet implemented.
       def ipv6_multicast_hops=(value)
         # TODO: Implement
       end
       
+      # Not yet implemented.
       def ipv6_multicast_loop
         # TODO: Implement
         false
@@ -220,6 +227,7 @@ module Ionian
       
       alias_method :ipv6_multicast_loop?, :ipv6_multicast_loop
       
+      # Not yet implemented.
       def ipv6_multicast_loop=(value)
         # TODO: Implement
       end
