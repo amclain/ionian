@@ -10,6 +10,7 @@ module Ionian
     # a server).
     #
     # Accepts an optional block that is passed to #register_accept_listener.
+    # Server opens listening socket on instantiation if this block is provided.
     # 
     # Args:
     #   interface:      The address of the network interface to bind to.
@@ -41,6 +42,8 @@ module Ionian
       when :unix
         @server = UNIXServer.new @interface
       end
+      
+      listen if block_given?
     end
     
     # Starts the socket server listening for connections.
@@ -72,6 +75,11 @@ module Ionian
       @server.close if @server
       @accept_thread.join if @accept_thread
       @accept_thread = nil
+    end
+    
+    # Returns true if the server listener socket is closed.
+    def closed?
+      @server.closed?
     end
     
     # Register a block to be run when server accepts a client connection.
