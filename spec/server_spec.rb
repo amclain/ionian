@@ -35,9 +35,7 @@ describe Ionian::Server do
   
   let (:connections) { [] }
   let (:server) {
-    Ionian::Server.new(**kwargs).tap do |svr|
-      svr.listen { |con| connections << con }
-    end
+    Ionian::Server.new(**kwargs) { |con| connections << con }
   }
   
   after {
@@ -48,6 +46,7 @@ describe Ionian::Server do
   
   it { should respond_to :listen }
   it { should respond_to :close }
+  it { should respond_to :closed? }
   
   
   describe "accept listener registration" do
@@ -58,11 +57,7 @@ describe Ionian::Server do
     it "can register in #initialize block" do
       client = nil
       
-      server = Ionian::Server.new **kwargs do |c|
-        client = c
-      end
-      
-      server.listen
+      server = Ionian::Server.new(**kwargs) { |con| client = con }
       
       # Create client connection.
       remote_client = TCPSocket.new 'localhost', kwargs[:port]
@@ -78,9 +73,8 @@ describe Ionian::Server do
     it "can register in #listen block" do
       client = nil
       
-      server = Ionian::Server.new(**kwargs).tap do |svr|
-        svr.listen { |c| client = c }
-      end
+      server = Ionian::Server.new(**kwargs)
+      server.listen { |c| client = c }
       
       # Create client connection.
       remote_client = TCPSocket.new 'localhost', kwargs[:port]
