@@ -83,8 +83,44 @@ describe Ionian::Socket do
   subject { Ionian::Socket.new **kwargs }
   after { subject.close if subject.respond_to? :close and not subject.closed? }
   
+  describe "on_match" do
+    include_context "tcp listener socket"
+    
+    it "returns a match only once when run_match thread is running" do
+      data = "test on_match\n"
+      
+      matches = []
+      subject.on_match { matches << 1 }
+      match_thread = subject.run_match
+      
+      sleep 0.1 # Wait for the client socket to be accepted.
+      client.write data
+      client.flush
+      sleep 0.1
+      
+      match_thread.kill
+      
+      matches.count.should eq 1
+    end
+    
+    it "returns a match only once when run_match thread is not running" do
+      data = "test on_match\n"
+      
+      matches = []
+      subject.on_match { matches << 1 }
+      
+      sleep 0.1 # Wait for the client socket to be accepted.
+      client.write data
+      client.flush
+      sleep 0.1
+      
+      match = subject.read_match
+      
+      matches.count.should eq 1
+    end
+  end
   
-  describe do
+  describe "existing socket" do
     subject { Ionian::Socket.new existing_socket }
     
     after {

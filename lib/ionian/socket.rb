@@ -4,8 +4,6 @@ module Ionian
   
   # A convenient wrapper for TCP, UDP, and Unix client sockets.
   class Socket
-    # Returns the regular expression used to match incoming data.
-    attr_accessor :expression
     
     # Creates a new socket or wraps an existing socket.
     # 
@@ -89,6 +87,17 @@ module Ionian
     # :tcp, :udp, :unix
     attr_reader :protocol
     alias_method :protocol?, :protocol
+    
+    # Returns the regular expression used to match incoming data.
+    def expression
+      @expression || @socket.expression
+    end
+    
+    # Set the regular expression used to match incoming data.
+    def expression=(exp)
+      @expression = exp
+      @socket.expression = exp if @socket
+    end
     
     # Returns true if the socket remains open after writing data.
     def persistent?

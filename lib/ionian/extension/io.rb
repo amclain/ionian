@@ -21,7 +21,7 @@ module Ionian
       def initialize_ionian
         @ionian_listeners     = []
         @ionian_buf           = ''
-        @ionian_expression    = /(.*?)\r?\n?/
+        @ionian_expression    = /(.*?)[\r\n]+/
         @ionian_timeout       = nil
         @ionian_skip_select   = false
         @ionian_build_methods = true
@@ -122,8 +122,8 @@ module Ionian
           end
         end
         
-        # Notify on_match listeners.
-        @matches.each {|match| notify_listeners match} if notify
+        # Notify on_match listeners unless the #run_match thread is active.
+        @matches.each {|match| notify_listeners match} if notify and not @match_listener
         
         @matches
       end
