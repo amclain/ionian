@@ -106,7 +106,6 @@ module Ionian
         
         while @ionian_buf =~ exp
           @matches << $~ # Match data.
-          yield $~ if block_given?
           @ionian_buf = $' # Leave post match data in the buffer.
         end
         
@@ -121,6 +120,9 @@ module Ionian
               }
           end
         end
+        
+        # Pass each match to block.
+        @matches.each {|match| yield match} if block_given?
         
         # Notify on_match listeners unless the #run_match thread is active.
         @matches.each {|match| notify_listeners match} if notify and not @match_listener
@@ -160,7 +162,7 @@ module Ionian
       # Register a block to be called when #run_match receives matched data.
       # Method callbacks can be registered with &object.method(:method).
       # Returns a reference to the given block.
-      # block = ionian_socket.register_observer {...}
+      # block = ionian_socket.register_observer { ... }
       def register_observer(&block)
         @ionian_listeners << block unless @ionian_listeners.include? block
         block
