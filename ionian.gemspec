@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
   s.license   = 'MIT'
   
   s.files     =
-    ['license.txt'] +
+    ['license.txt', 'README.md'] +
     # Dir['bin/**/*'] +
     Dir['lib/**/*'] +
     Dir['doc/**/*']
@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
   ]
   
   s.add_development_dependency 'rake'
-  s.add_development_dependency 'rdoc'
+  s.add_development_dependency 'yard'
   s.add_development_dependency 'pry'
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'fivemat'
