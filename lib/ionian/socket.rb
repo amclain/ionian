@@ -128,7 +128,7 @@ module Ionian
     # Register a block to be called when #run_match receives matched data.
     # Method callbacks can be registered with &object.method(:method).
     # Returns a reference to the given block.
-    # block = ionian_socket.register_observer {...}
+    # block = ionian_socket.register_observer { ... }
     def register_observer &block
       @ionian_listeners << block unless @ionian_listeners.include? block
       @socket.register_observer &block if @socket
