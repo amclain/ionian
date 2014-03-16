@@ -43,6 +43,23 @@ describe Ionian::Extension::IO do
     match[1].value.should eq '0'
   end
   
+  it "attaches named captures as methods inside the block" do
+    client.write "CS 1234 1\n"
+    client.flush
+    
+    received_matches = false
+    
+    subject.read_match do |match|
+      received_matches = true
+      
+      match.cmd.should   eq 'CS'
+      match.param.should eq '1234'
+      match.value.should eq '1'
+    end
+    
+    received_matches.should eq true
+  end
+  
   it "can receive matched data on a listener" do
     block_run = false
     
