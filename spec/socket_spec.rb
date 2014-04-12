@@ -152,11 +152,12 @@ describe Ionian::Socket do
     }
     
     
-    describe do
+    describe "can convert an existing tcp socket" do
       include_context "tcp listener socket"
-      let (:existing_socket) { TCPSocket.new 'localhost', kwargs[:port] }
       
-      it "can convert an existing tcp socket" do
+      let(:existing_socket) { TCPSocket.new 'localhost', kwargs[:port] }
+      
+      specify do
         subject.should be_an Ionian::Socket
         subject.closed?.should be false
         subject.protocol.should eq :tcp
@@ -164,15 +165,14 @@ describe Ionian::Socket do
       end
     end
     
-    describe do
+    describe "can convert an existing udp socket" do
       include_context "udp listener socket"
-      let (:existing_socket) { 
-        UDPSocket.new.tap do |s|
-          s.connect 'localhost', port
-        end
+      
+      let(:existing_socket) { 
+        UDPSocket.new.tap { |s| s.connect 'localhost', port }
       }
       
-      it "can convert an existing udp socket" do
+      specify do
         subject.should be_an Ionian::Socket
         subject.closed?.should be false
         subject.protocol.should be :udp
@@ -180,11 +180,12 @@ describe Ionian::Socket do
       end
     end
     
-    describe do
+    describe "can convert an existing unix socket" do
       include_context "unix listener socket"
-      let (:existing_socket) { UNIXSocket.new socket_file }
       
-      it "can convert an existing unix socket" do
+      let(:existing_socket) { UNIXSocket.new socket_file }
+      
+      specify do
         subject.should be_an Ionian::Socket
         subject.closed?.should be false
         subject.protocol.should be :unix
