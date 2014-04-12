@@ -116,22 +116,6 @@ describe Ionian::Extension::IO do
     block_run.should eq true
   end
   
-  it "can read all of the data in the buffer" do
-    byte_count = 131_072 # 100 killobytes.
-    
-    data = ''
-    byte_count.times { data += '1' }
-    
-    subject
-    client.write data
-    client.flush
-    
-    result = subject.read_all
-    
-    result.size.should eq byte_count
-    result.should eq data
-  end
-  
   it "can set the match expression in a #read_match kwarg" do
     expression = /(?<param1>\w+)\s+(?<param2>\w+)\s*[\r\n]+/
     data = "hello world\n"
@@ -176,6 +160,47 @@ describe Ionian::Extension::IO do
     subject.read_match notify: false
     
     match_triggered.should eq false
+  end
+  
+  it "can read all of the data in the buffer" do
+    byte_count = 131_072 # 100 killobytes.
+    
+    data = ''
+    byte_count.times { data += '1' }
+    
+    subject
+    client.write data
+    client.flush
+    
+    result = subject.read_all
+    
+    result.size.should eq byte_count
+    result.should eq data
+  end
+  
+  it "can match large data in the buffer" do
+    byte_count = 131_072 # 100 killobytes.
+    terminator = '0'
+    
+    data = ''
+    byte_count.times { data += '1' }
+    data << terminator
+    
+    subject.expression = /(?<data>1+)(?<term>0)/
+    client.write data
+    client.flush
+    
+    # The data needs time to propagate the network stack.
+    # If this is a small amount, not all the data gets
+    # there by the time the assertions run.
+    sleep 0.5
+    
+    match = []
+    Timeout.timeout(5) { match = subject.read_match }
+    
+    match.empty?.should eq false
+    match.first.data.should eq data.chop
+    match.first.term.should eq terminator
   end
   
 end
