@@ -14,7 +14,7 @@ module Ionian
     module Socket
       
       # Called automaticallly when the object is extended with #extend.
-      def self.extended(obj)
+      def self.extended obj
         obj.extend Ionian::Extension::IO
         obj.initialize_ionian_socket
       end
@@ -25,6 +25,7 @@ module Ionian
       end
       
       # Returns true if sending broadcast datagrams is permitted.
+      # ( SO_BROADCAST )
       def broadcast
         param = self.getsockopt(::Socket::SOL_SOCKET, ::Socket::SO_BROADCAST)
           .data.unpack('i').first
@@ -32,7 +33,8 @@ module Ionian
       end
       
       # Permit sending broadcast datagrams if true.
-      def broadcast=(value)
+      # ( SO_BROADCAST )
+      def broadcast= value
         param = value ? 1 : 0
         self.setsockopt ::Socket::SOL_SOCKET, ::Socket::SO_BROADCAST, [param].pack('i')
       end
@@ -42,6 +44,7 @@ module Ionian
       # For connection-oriented protocols, prevent #close from returning
       # immediately and try to deliver any data in the send buffer if value
       # is true.
+      # ( SO_LINGER )
       def linger
         param = self.getsockopt(::Socket::SOL_SOCKET, ::Socket::SO_LINGER)
           .data.unpack('i').first
@@ -51,7 +54,8 @@ module Ionian
       # For connection-oriented protocols, prevent #close from returning
       # immediately and try to deliver any data in the send buffer if value
       # is true.
-      def linger=(value)
+      # ( SO_LINGER )
+      def linger= value
         param = value ? 1 : 0
         self.setsockopt ::Socket::SOL_SOCKET, ::Socket::SO_LINGER, [param].pack('i')
       end
@@ -70,7 +74,7 @@ module Ionian
       
       # Allows local address reuse if true.
       # ( SO_REUSEADDR )
-      def reuse_addr=(value)
+      def reuse_addr= value
         param = value ? 1 : 0
         self.setsockopt ::Socket::SOL_SOCKET, ::Socket::SO_REUSEADDR, [param].pack('i')
       end
@@ -86,7 +90,7 @@ module Ionian
       
       # Sets the time to live (hop limit).
       # ( IP_TTL )
-      def ttl=(value)
+      def ttl= value
         self.setsockopt ::Socket::IPPROTO_IP, ::Socket::IP_TTL, [value].pack('i')
       end
       
@@ -102,7 +106,7 @@ module Ionian
       
       # Disables the Nagle algorithm if true.
       # ( TCP_NODELAY )
-      def no_delay=(value)
+      def no_delay= value
         param = value ? 1 : 0
         self.setsockopt ::Socket::IPPROTO_TCP, ::Socket::TCP_NODELAY, [param].pack('i')
       end
@@ -127,7 +131,7 @@ module Ionian
       # See #recork.
       # Linux only.
       # ( TCP_CORK )
-      def cork=(value)
+      def cork= value
         param = value ? 1 : 0
         self.setsockopt ::Socket::IPPROTO_TCP, ::Socket::TCP_CORK, [param].pack('i')
       end
@@ -145,7 +149,7 @@ module Ionian
       # Interface is the local network interface to receive the
       # multicast traffic on (all interfaces if not specified).
       # ( IP_ADD_MEMBERSHIP )
-     def ip_add_membership(address = nil, interface = nil)
+     def ip_add_membership address = nil, interface = nil
         address   ||= self.remote_address.ip_address
         interface ||= '0.0.0.0'
         
@@ -161,7 +165,7 @@ module Ionian
       # Interface is the local network interface the multicast
       # traffic is received on (all interfaces if not specified).
       # ( IP_DROP_MEMBERSHIP )
-      def ip_drop_membership(address = nil, interface = nil)
+      def ip_drop_membership address = nil, interface = nil
         address   ||= self.remote_address.ip_address
         interface ||= '0.0.0.0'
         
@@ -180,7 +184,7 @@ module Ionian
       
       # Specify default interface for outgoing multicasts.
       # ( IP_MULTICAST_IF )
-      def ip_multicast_if=(interface = nil)
+      def ip_multicast_if= interface = nil
         interface ||= '0.0.0.0'
         
         self.setsockopt \
@@ -198,7 +202,7 @@ module Ionian
       
       # Set the time to live (hop limit) for outgoing multicasts.
       # ( IP_MULTICAST_TTL )
-      def ip_multicast_ttl=(value)
+      def ip_multicast_ttl= value
         self.setsockopt ::Socket::IPPROTO_IP, ::Socket::IP_MULTICAST_TTL, [value].pack('C')
       end
       
@@ -214,7 +218,7 @@ module Ionian
       
       # Enables loopback of outgoing multicasts if true.
       # ( IP_MULTICAST_LOOP )
-      def ip_multicast_loop=(value)
+      def ip_multicast_loop= value
         param = value ? 1 : 0
         self.setsockopt ::Socket::IPPROTO_IP, ::Socket::IP_MULTICAST_LOOP, [param].pack('C')
       end
@@ -238,7 +242,7 @@ module Ionian
       end
       
       # Not yet implemented.
-      def ipv6_multicast_if=(value)
+      def ipv6_multicast_if= value
         # TODO: Implement
       end
       
@@ -249,7 +253,7 @@ module Ionian
       end
       
       # Not yet implemented.
-      def ipv6_multicast_hops=(value)
+      def ipv6_multicast_hops= value
         # TODO: Implement
       end
       
@@ -262,14 +266,14 @@ module Ionian
       alias_method :ipv6_multicast_loop?, :ipv6_multicast_loop
       
       # Not yet implemented.
-      def ipv6_multicast_loop=(value)
+      def ipv6_multicast_loop= value
         # TODO: Implement
       end
       
       
       class << self
         # Returns true if the given address is within the multicast range.
-        def multicast(address)
+        def multicast address
           address >= '224.0.0.0' and address <= '239.255.255.255' ? true : false
         end
         

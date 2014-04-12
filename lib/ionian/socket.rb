@@ -31,7 +31,7 @@ module Ionian
     #   cork:       Set true to enable the TCP_CORK flag. Buffers multiple writes
     #               into one segment.
     #   expression: Overrides the #read_match regular expression for received data.
-    def initialize(existing_socket = nil, **kwargs)
+    def initialize existing_socket = nil, **kwargs
       @socket = existing_socket
       
       @ionian_listeners = []
@@ -104,7 +104,7 @@ module Ionian
     end
     
     # Set the regular expression used to match incoming data.
-    def expression=(exp)
+    def expression= exp
       @expression = exp
       @socket.expression = exp if @socket
     end
@@ -118,7 +118,7 @@ module Ionian
     # Returns an array of received matches.
     # Block yields received match.
     # See Ionian::Extension::IO#read_match.
-    def cmd(string, **kwargs, &block)
+    def cmd string, **kwargs, &block
       create_socket unless @persistent
       
       if @protocol == :udp
@@ -129,7 +129,7 @@ module Ionian
       
       @socket.flush
       
-      matches = @socket.read_match(kwargs) {|match| yield match if block_given?}
+      matches = @socket.read_match(kwargs) { |match| yield match if block_given? }
       @socket.close unless @persistent
       
       matches
@@ -148,8 +148,8 @@ module Ionian
     alias_method :on_match, :register_observer
     
     # Unregister a block from being called when matched data is received.
-    def unregister_observer(&block)
-      @ionian_listeners.delete_if {|o| o == block}
+    def unregister_observer &block
+      @ionian_listeners.delete_if { |o| o == block }
       @socket.unregister_observer &block if @socket
       block
     end
@@ -160,7 +160,7 @@ module Ionian
     # Args:
     #   Timeout: Number of seconds to wait for data until
     #     giving up. Set to nil for blocking.
-    def has_data?(**kwargs)
+    def has_data? **kwargs
       return false unless @socket
       @socket.has_data? kwargs
     end
@@ -179,13 +179,13 @@ module Ionian
     
     # Writes the given string(s) to the socket and appends a
     # newline character to any string not already ending with one.
-    def puts(*string)
-      self.write string.map{|s| s.chomp}.join("\n") + "\n"
+    def puts *string
+      self.write string.map{ |s| s.chomp }.join("\n") + "\n"
     end
     
     # Writes the given string to the socket. Returns the number of
     # bytes written.
-    def write(string)
+    def write string
       create_socket unless @persistent
       
       num_bytes = 0
@@ -265,8 +265,8 @@ module Ionian
       # This was chosen over method_missing to avoid traversing the object
       # hierarchy on every method call, like transmitting data.
       @socket.methods
-        .select {|m| @socket.respond_to? m}
-        .select {|m| not self.respond_to? m}
+        .select { |m| @socket.respond_to? m }
+        .select { |m| not self.respond_to? m }
         .each do |m|
           self.singleton_class.send :define_method, m do |*args, &block|
             @socket.__send__ m, *args, &block
