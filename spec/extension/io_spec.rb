@@ -117,11 +117,19 @@ describe Ionian::Extension::IO do
   end
   
   it "can read all of the data in the buffer" do
-    data = "read all works"
-    subject.write data
-    subject.flush
+    byte_count = 131_072 # 100 killobytes.
     
-    client.read_all.should eq data
+    data = ''
+    byte_count.times { data += '1' }
+    
+    subject
+    client.write data
+    client.flush
+    
+    result = subject.read_all
+    
+    result.size.should eq byte_count
+    result.should eq data
   end
   
   it "can set the match expression in a #read_match kwarg" do
