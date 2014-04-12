@@ -156,6 +156,10 @@ describe Ionian::Server do
     
     after { client.close unless client.closed? }
     
+    its(:interface) { should eq '0.0.0.0' }
+    its(:port)      { should eq port }
+    its(:protocol)  { should eq :tcp }
+    
     it "requires port to be specified" do
       expect { Ionian::Server.new }.to raise_error ArgumentError
     end
@@ -166,6 +170,16 @@ describe Ionian::Server do
     end
     
     include_examples "send and receive data"
+    
+    
+    describe "parse port from interface string" do
+      let(:interface) { "localhost:#{port}" }
+      let(:port) { nil }
+      
+      # TODO
+      # its(:port) { should eq port }
+    end
+    
   end
   
   
@@ -199,6 +213,10 @@ describe Ionian::Server do
       File.delete socket_file if File.exists? socket_file
     }
     
+    
+    its(:interface) { should eq socket_file }
+    its(:port)      { should eq nil }
+    its(:protocol)  { should eq :unix }
     
     it "should raise error if path not specified" do
       expect { Ionian::Server.new protocol: :unix }.to raise_error ArgumentError

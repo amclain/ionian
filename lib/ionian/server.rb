@@ -32,14 +32,18 @@ module Ionian
       @accept_listeners = []
       register_accept_listener &block if block_given?
       
-      @interface = kwargs.fetch :interface, ''
+      # @interface = kwargs.fetch :interface, nil
+      @interface = kwargs.fetch :interface, nil
       @port      = kwargs.fetch :port, nil
       
       # Automatically select UDP for the multicast range. Otherwise default to TCP.
       default_protocol = :tcp
-      # TODO: This ivar may be incorrect for UDP -- bound interface is not destination.
-      default_protocol = :udp  if Ionian::Extension::Socket.multicast? @interface
-      default_protocol = :unix if @interface.start_with? '/'
+      
+      if @interface
+        # TODO: This ivar may be incorrect for UDP -- bound interface is not destination.
+        default_protocol = :udp  if Ionian::Extension::Socket.multicast? @interface
+        default_protocol = :unix if @interface.start_with? '/'
+      end
       
       @protocol  = kwargs.fetch :protocol, default_protocol
       
@@ -47,8 +51,11 @@ module Ionian
       # TODO: Move this to #listen.
       case @protocol
       when :tcp
+        @interface ||= '0.0.0.0' # All interfaces.
+        
         # TODO: Parse port from interface if TCP.
         raise ArgumentError, "Port not specified." unless @port
+        
         @server = TCPServer.new @interface, @port
         @server.setsockopt ::Socket::SOL_SOCKET, ::Socket::SO_REUSEADDR, [1].pack('i')
         
@@ -56,8 +63,7 @@ module Ionian
         raise ArgumentError, "UDP should be implemented with Ionian::Socket."
         
       when :unix
-        raise ArgumentError, "Path not specified." \
-          if @interface.nil? or @interface.empty?
+        raise ArgumentError, "Path not specified." unless @interface
         
         @server = UNIXServer.new @interface
       end
