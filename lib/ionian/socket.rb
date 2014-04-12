@@ -14,6 +14,12 @@ module Ionian
     # Local port number.
     attr_reader :bind_port
     
+    # Returns a symbol of the type of protocol this socket uses:
+    # :tcp, :udp, :unix
+    attr_reader :protocol
+    alias_method :protocol?, :protocol
+    
+    
     # Creates a new socket or wraps an existing socket.
     # 
     # Args:
@@ -93,11 +99,6 @@ module Ionian
       end
     end
         
-    # Returns a symbol of the type of protocol this socket uses:
-    # :tcp, :udp, :unix
-    attr_reader :protocol
-    alias_method :protocol?, :protocol
-    
     # Returns the regular expression used to match incoming data.
     def expression
       @expression || @socket.expression

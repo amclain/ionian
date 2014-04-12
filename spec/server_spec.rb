@@ -44,6 +44,10 @@ describe Ionian::Server do
   }
   
   
+  it { should respond_to :interface }
+  it { should respond_to :port }
+  it { should respond_to :protocol }
+  
   it { should respond_to :listen }
   it { should respond_to :close }
   it { should respond_to :closed? }
