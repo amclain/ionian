@@ -163,10 +163,10 @@ describe Ionian::Extension::IO do
   end
   
   it "can read all of the data in the buffer" do
-    byte_count = 131_072 # 100 killobytes.
+    repeat = 8192 # 100 killobytes.
     
     data = ''
-    byte_count.times { data += '1' }
+    repeat.times { data += '1111111111111111' }
     
     subject
     client.write data
@@ -174,16 +174,16 @@ describe Ionian::Extension::IO do
     
     result = subject.read_all
     
-    result.size.should eq byte_count
+    result.size.should eq data.size
     result.should eq data
   end
   
   it "can match large data in the buffer" do
-    byte_count = 131_072 # 100 killobytes.
+    repeat = 8192 # 100 killobytes.
     terminator = '0'
     
     data = ''
-    byte_count.times { data += '1' }
+    repeat.times { data += '1111111111111111' }
     data << terminator
     
     subject.expression = /(?<data>1+)(?<term>0)/
