@@ -6,6 +6,17 @@ module Ionian
   # A convenient wrapper for TCP, UDP, and Unix server sockets.
   class Server
     
+    # Interface to listen for clients.
+    attr_reader :interface
+    
+    # Port number to listen for clients.
+    attr_reader :port
+    
+    # Returns a symbol of the type of protocol this socket uses:
+    # :tcp, :udp, :unix
+    attr_reader :protocol
+    alias_method :protocol?, :protocol
+    
     # A convenient wrapper for TCP and Unix server sockets (UDP doesn't use
     # a server).
     #
@@ -13,6 +24,7 @@ module Ionian
     # Server opens listening socket on instantiation if this block is provided.
     # 
     # Args:
+    #   port:           Port number to listen for clients.
     #   interface:      The address of the network interface to bind to.
     #                   Defaults to all.
     #   protocol:       :tcp, :unix. Default is :tcp.
@@ -20,7 +32,10 @@ module Ionian
       @accept_listeners = []
       register_accept_listener &block if block_given?
       
-      @interface = kwargs.fetch :interface, ''
+      @interface = kwargs.fetch :interface, '0.0.0.0'
+      
+      # TODO: Parse port from interface.
+      
       @port      = kwargs.fetch :port, nil
       
       
