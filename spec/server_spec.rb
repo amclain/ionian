@@ -30,13 +30,16 @@ end
 
 describe Ionian::Server do
   
-  let (:port) { 5051 }
-  let (:kwargs) {{ port: port }}
+  let(:port) { 5051 }
+  let(:protocol) { :tcp }
+  let(:kwargs) {{ port: port, protocol: protocol }}
   
-  let (:connections) { [] }
-  let (:server) {
+  let(:connections) { [] }
+  let(:server) {
     Ionian::Server.new(**kwargs) { |con| connections << con }
   }
+  
+  subject { server }
   
   after {
     server.close
@@ -141,7 +144,7 @@ describe Ionian::Server do
   
   
   describe "with protocol :tcp" do
-    let (:client) {
+    let(:client) {
       server
       TCPSocket.new('localhost', port).tap do |socket|
         socket.extend Ionian::Extension::IO
@@ -153,6 +156,9 @@ describe Ionian::Server do
     
     after { client.close unless client.closed? }
     
+    it "requires port to be specified" do
+      Proc.new { Ionian::Server.new }.should raise_error ArgumentError
+    end
     
     it "accepts a listener" do
       client # Instantiate the client and server.
@@ -167,17 +173,17 @@ describe Ionian::Server do
     # UDP sockets use datagrams, not the client/server model,
     # therefore Ionian::Server should not implement them.
     specify {
-      Proc.new {Ionian::Server.new port: port, protocol: :udp}
+      Proc.new { Ionian::Server.new port: port, protocol: :udp }
         .should raise_error ArgumentError
     }
   end
   
   
   describe "with protocol :unix" do
-    let (:socket_file) { '/tmp/ionian.server.test.sock' }
-    let (:kwargs) {{ interface: socket_file }}
+    let(:socket_file) { '/tmp/ionian.server.test.sock' }
+    let(:kwargs) {{ interface: socket_file }}
     
-    let (:client) {
+    let(:client) {
       server
       UNIXSocket.new(socket_file).tap do |socket|
         socket.extend Ionian::Extension::IO

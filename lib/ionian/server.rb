@@ -32,7 +32,7 @@ module Ionian
       @accept_listeners = []
       register_accept_listener &block if block_given?
       
-      @interface = kwargs.fetch :interface, '0.0.0.0'
+      @interface = kwargs.fetch :interface, ''
       
       # TODO: Parse port from interface.
       
@@ -46,6 +46,8 @@ module Ionian
       default_protocol = :unix if @interface.start_with? '/'
       
       @protocol  = kwargs.fetch :protocol, default_protocol
+      
+      raise ArgumentError, "Port not specified." if @port.nil? and @protocol != :unix
       
       # TODO: Move this to #listen.
       case @protocol
