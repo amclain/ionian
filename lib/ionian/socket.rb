@@ -17,7 +17,7 @@ module Ionian
     # Creates a new socket or wraps an existing socket.
     # 
     # Args:
-    #   host:       IP or hostname to connect to.
+    #   host:       IP or hostname to connect to. Can contain the port in the format "host:port".
     #   port:       Connection's port number. Default is 23. Unused by :unix protocol.
     #   protocol:   Type of socket to create. :tcp, :udp, :unix. Default is :tcp.
     #               :udp will be automatically selected for addresses in the multicast range.
