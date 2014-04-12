@@ -1,5 +1,13 @@
 shared_examples "socket extension interface" do
   
+  it { should respond_to :broadcast }
+  it { should respond_to :broadcast? }
+  it { should respond_to :broadcast= }
+  
+  it { should respond_to :linger }
+  it { should respond_to :linger? }
+  it { should respond_to :linger= }
+  
   it { should respond_to :reuse_addr  }
   it { should respond_to :reuse_addr? }
   it { should respond_to :reuse_addr= }
