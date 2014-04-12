@@ -24,6 +24,40 @@ module Ionian
       def initialize_ionian_socket
       end
       
+      # Returns true if sending broadcast datagrams is permitted.
+      def broadcast
+        param = self.getsockopt(::Socket::SOL_SOCKET, ::Socket::SO_BROADCAST)
+          .data.unpack('i').first
+        param > 0 ? true : false
+      end
+      
+      # Permit sending broadcast datagrams if true.
+      def broadcast=(value)
+        param = value ? 1 : 0
+        self.setsockopt ::Socket::SOL_SOCKET, ::Socket::SO_BROADCAST, [param].pack('i')
+      end
+      
+      alias_method :broadcast?, :broadcast
+      
+      # For connection-oriented protocols, prevent #close from returning
+      # immediately and try to deliver any data in the send buffer if value
+      # is true.
+      def linger
+        param = self.getsockopt(::Socket::SOL_SOCKET, ::Socket::SO_LINGER)
+          .data.unpack('i').first
+        param > 0 ? true : false
+      end
+      
+      # For connection-oriented protocols, prevent #close from returning
+      # immediately and try to deliver any data in the send buffer if value
+      # is true.
+      def linger=(value)
+        param = value ? 1 : 0
+        self.setsockopt ::Socket::SOL_SOCKET, ::Socket::SO_LINGER, [param].pack('i')
+      end
+      
+      alias_method :linger?, :linger
+      
       # Returns true if local address reuse is allowed.
       # ( SO_REUSEADDR )
       def reuse_addr
