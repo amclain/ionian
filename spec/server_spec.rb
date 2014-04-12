@@ -57,6 +57,9 @@ describe Ionian::Server do
   
   
   describe "accept listener registration" do
+    
+    let(:remote_client) { TCPSocket.new 'localhost', kwargs[:port] }
+    
     it { should respond_to :on_accept }
     it { should respond_to :register_accept_listener }
     it { should respond_to :unregister_accept_listener }
@@ -67,7 +70,7 @@ describe Ionian::Server do
       server = Ionian::Server.new(**kwargs) { |con| client = con }
       
       # Create client connection.
-      remote_client = TCPSocket.new 'localhost', kwargs[:port]
+      remote_client
       sleep 0.1
       
       remote_client.close
@@ -84,7 +87,7 @@ describe Ionian::Server do
       server.listen { |c| client = c }
       
       # Create client connection.
-      remote_client = TCPSocket.new 'localhost', kwargs[:port]
+      remote_client
       sleep 0.1
       
       remote_client.close
@@ -106,7 +109,7 @@ describe Ionian::Server do
       server.listen
       
       # Create client connection.
-      remote_client = TCPSocket.new 'localhost', kwargs[:port]
+      remote_client
       sleep 0.1
       
       remote_client.close
@@ -131,7 +134,7 @@ describe Ionian::Server do
       server.listen
       
       # Create client connection.
-      remote_client = TCPSocket.new 'localhost', kwargs[:port]
+      remote_client
       sleep 0.1
       
       remote_client.close
@@ -144,6 +147,7 @@ describe Ionian::Server do
   
   
   describe "with protocol :tcp" do
+    
     let(:client) {
       server
       TCPSocket.new('localhost', port).tap do |socket|
@@ -190,16 +194,19 @@ describe Ionian::Server do
   
   
   describe "with protocol :udp" do
+    
     # UDP sockets use datagrams, not the client/server model,
     # therefore Ionian::Server should not implement them.
     specify {
       expect { Ionian::Server.new port: port, protocol: :udp }
         .to raise_error ArgumentError
     }
+    
   end
   
   
   describe "with protocol :unix" do
+    
     let(:socket_file) { '/tmp/ionian.server.test.sock' }
     let(:kwargs) {{ interface: socket_file }}
     
