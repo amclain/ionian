@@ -60,3 +60,18 @@ loop do
   end
 end
 ```
+
+### Simple Server
+
+``` ruby
+host = 'localhost:5000'
+
+server = Ionian::Server.new interface: host do |client|
+  # Greet the connected client.
+  client.write "Welcome! You are connected to the server.\n"
+end
+
+socket = Ionian::Socket.new host: host
+# Retrieve the greeting message.
+puts socket.read_all
+```
