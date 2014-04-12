@@ -203,4 +203,55 @@ describe Ionian::Extension::IO do
     match.first.term.should eq terminator
   end
   
+  it "can match data that arrives in fragments" do
+    terminator = '0'
+    data = '11111111'
+    repeat = 3
+    
+    subject.expression = /(?<data>1+)(?<term>0)/
+    
+    result = nil
+    found_match = false
+    
+    # Match handler.
+    subject.on_match do |match|
+      result = match
+      found_match = true
+    end
+    
+    # Start looking for matches.
+    thread = subject.run_match
+    
+    begin
+      
+      Timeout.timeout 10 do
+        
+        # Feed data into the socket.
+        repeat.times do
+          client.write data
+          client.flush
+          sleep 0.5
+        end
+        
+        client.write terminator
+        client.flush
+        sleep 0.1
+        
+      end
+      
+    rescue
+      thread.kill # Make sure the run_match thread dies.
+      raise # Reraise timeout exception.
+    end
+    
+    found_match.should eq true
+    
+    # Replicate the data that should have been received.
+    expected_data = ''
+    repeat.times { expected_data += data }
+    
+    result.data.should eq expected_data
+    result.term.should eq terminator
+  end
+  
 end
