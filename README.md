@@ -38,8 +38,7 @@ socket.read_match { |match| p match; puts '' }
 # A simple IRC client.
 
 socket = Ionian::Socket.new \
-  host: 'chat.freenode.net',
-  port: 6667,
+  host: 'chat.freenode.net:6667',
   # Break up the matches into named captures so it's easier
   # to sort through the server's responses.
   expression: /:(?<server>.*?)\s*:(?<msg>.*?)[\r\n]+/
