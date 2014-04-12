@@ -12,7 +12,7 @@ module Ionian
       attr_accessor :ionian_timeout
       
       # Called automaticallly when the object is extended with #extend.
-      def self.extended(obj)
+      def self.extended obj
         obj.initialize_ionian
       end
       
@@ -46,7 +46,7 @@ module Ionian
       # sequence. It is possible to use named captures in a
       # regex, which allows for convienient accessors like
       # match[:parameter].
-      def expression=(exp)
+      def expression= exp
         @ionian_expression = exp
         @ionian_expression = Regexp.new "(.*?)#{expression}" if exp.is_a? String
       end
@@ -85,7 +85,7 @@ module Ionian
       #                   are calling IO::select ahead of this method.
       #   build_methods:  Build accessor methods from named capture groups.
       #                   Enabled by default.
-      def read_match(**kwargs, &block)
+      def read_match **kwargs, &block
         timeout       = kwargs.fetch :timeout,        @ionian_timeout
         notify        = kwargs.fetch :notify,         true
         skip_select   = kwargs.fetch :skip_select,    @ionian_skip_select
@@ -112,19 +112,21 @@ module Ionian
         if build_methods
           @matches.each do |match|
             match.names
-              .map {|name| name.to_sym}
-              .each {|symbol| match.singleton_class
-                .send(:define_method, symbol) { match[symbol] } \
-                  unless match.respond_to? symbol
+              .map { |name| name.to_sym }
+              .each { |symbol|
+                match.singleton_class
+                  .send(:define_method, symbol) { match[symbol] } \
+                    unless match.respond_to? symbol
               }
           end
         end
         
         # Pass each match to block.
-        @matches.each {|match| yield match} if block_given?
+        @matches.each { |match| yield match } if block_given?
         
         # Notify on_match listeners unless the #run_match thread is active.
-        @matches.each {|match| notify_listeners match} if notify and not @match_listener
+        @matches.each { |match| notify_listeners match } \
+          if notify and not @match_listener
         
         @matches
       end
@@ -132,12 +134,12 @@ module Ionian
       # Start a thread that checks for data and notifies listeners (do |match, socket|).
       # Passes kwargs to #read_match.
       # This method SHOULD NOT be used if #read_match is used.
-      def run_match(**kwargs)
+      def run_match **kwargs
         @match_listener ||= Thread.new do
           begin
             while not closed? do
               matches = read_match **kwargs
-              matches.each {|match| notify_listeners match } if matches
+              matches.each { |match| notify_listeners match } if matches
             end
           rescue EOFError
           rescue IOError
@@ -151,10 +153,7 @@ module Ionian
       # This is typically handled automatically.
       def purge
         # Erase IO buffer.
-        while ::IO.select [self], nil, nil, 0
-          readpartial(0xFFFF)
-        end
-        
+        read_all
         @ionian_buf = ''
       end
       
@@ -162,7 +161,7 @@ module Ionian
       # Method callbacks can be registered with &object.method(:method).
       # Returns a reference to the given block.
       # block = ionian_socket.register_observer { ... }
-      def register_observer(&block)
+      def register_observer &block
         @ionian_listeners << block unless @ionian_listeners.include? block
         block
       end
@@ -170,8 +169,8 @@ module Ionian
       alias_method :on_match, :register_observer
       
       # Unregister a block from being called when matched data is received.
-      def unregister_observer(&block)
-        @ionian_listeners.delete_if {|o| o == block}
+      def unregister_observer &block
+        @ionian_listeners.delete_if { |o| o == block }
         block
       end
       
@@ -181,7 +180,7 @@ module Ionian
       # Send match to each of the registered observers. Includes self
       # as the second block parameter.
       def notify_listeners match
-        @ionian_listeners.each {|listener| listener.call match, self}
+        @ionian_listeners.each { |listener| listener.call match, self }
       end
     
     end
