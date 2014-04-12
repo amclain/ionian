@@ -54,7 +54,9 @@ module Ionian
       # Read all data in the buffer.
       # An alternative to using #readpartial with a large length.
       def read_all
-        data = ''
+        # Block until data has arrived.
+        data =  readpartial 0xFFFF
+        # If there is more data in the buffer, retrieve it nonblocking.
         data += readpartial 0xFFFF while has_data?
         data
       end
