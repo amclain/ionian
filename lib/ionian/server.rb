@@ -53,8 +53,14 @@ module Ionian
       when :tcp
         @interface ||= '0.0.0.0' # All interfaces.
         
+        # Parse host out of "host:port" if specified.
+        host_port_ary = @interface.to_s.split ':'
+        @interface = host_port_ary[0]
+        @port ||= host_port_ary[1]
+        
         # TODO: Parse port from interface if TCP.
         raise ArgumentError, "Port not specified." unless @port
+        @port = @port.to_i
         
         @server = TCPServer.new @interface, @port
         @server.setsockopt ::Socket::SOL_SOCKET, ::Socket::SO_REUSEADDR, [1].pack('i')

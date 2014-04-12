@@ -156,6 +156,7 @@ describe Ionian::Server do
     
     after { client.close unless client.closed? }
     
+    
     its(:interface) { should eq '0.0.0.0' }
     its(:port)      { should eq port }
     its(:protocol)  { should eq :tcp }
@@ -172,12 +173,17 @@ describe Ionian::Server do
     include_examples "send and receive data"
     
     
-    describe "parse port from interface string" do
-      let(:interface) { "localhost:#{port}" }
-      let(:port) { nil }
+    it "can parse port from interface string" do
+      port = 5060
+      host = 'localhost'
+      interface = "#{host}:#{port}"
       
-      # TODO
-      # its(:port) { should eq port }
+      s = Ionian::Server.new interface: interface
+      
+      s.interface.should eq host
+      s.port.should eq port
+      
+      s.close
     end
     
   end
