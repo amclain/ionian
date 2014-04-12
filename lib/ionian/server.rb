@@ -33,11 +33,7 @@ module Ionian
       register_accept_listener &block if block_given?
       
       @interface = kwargs.fetch :interface, ''
-      
-      # TODO: Parse port from interface.
-      
       @port      = kwargs.fetch :port, nil
-      
       
       # Automatically select UDP for the multicast range. Otherwise default to TCP.
       default_protocol = :tcp
@@ -47,16 +43,22 @@ module Ionian
       
       @protocol  = kwargs.fetch :protocol, default_protocol
       
-      raise ArgumentError, "Port not specified." if @port.nil? and @protocol != :unix
       
       # TODO: Move this to #listen.
       case @protocol
       when :tcp
+        # TODO: Parse port from interface if TCP.
+        raise ArgumentError, "Port not specified." unless @port
         @server = TCPServer.new @interface, @port
         @server.setsockopt ::Socket::SOL_SOCKET, ::Socket::SO_REUSEADDR, [1].pack('i')
+        
       when :udp
         raise ArgumentError, "UDP should be implemented with Ionian::Socket."
+        
       when :unix
+        raise ArgumentError, "Path not specified." \
+          if @interface.nil? or @interface.empty?
+        
         @server = UNIXServer.new @interface
       end
       

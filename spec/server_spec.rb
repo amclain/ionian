@@ -157,7 +157,7 @@ describe Ionian::Server do
     after { client.close unless client.closed? }
     
     it "requires port to be specified" do
-      Proc.new { Ionian::Server.new }.should raise_error ArgumentError
+      expect { Ionian::Server.new }.to raise_error ArgumentError
     end
     
     it "accepts a listener" do
@@ -173,8 +173,8 @@ describe Ionian::Server do
     # UDP sockets use datagrams, not the client/server model,
     # therefore Ionian::Server should not implement them.
     specify {
-      Proc.new { Ionian::Server.new port: port, protocol: :udp }
-        .should raise_error ArgumentError
+      expect { Ionian::Server.new port: port, protocol: :udp }
+        .to raise_error ArgumentError
     }
   end
   
@@ -198,6 +198,11 @@ describe Ionian::Server do
       client.close unless client.closed?
       File.delete socket_file if File.exists? socket_file
     }
+    
+    
+    it "should raise error if path not specified" do
+      expect { Ionian::Server.new protocol: :unix }.to raise_error ArgumentError
+    end
     
     include_examples "send and receive data"
   end
