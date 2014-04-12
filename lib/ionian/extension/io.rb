@@ -99,10 +99,7 @@ module Ionian
         end
         
         # Read data from the IO buffer until it's empty.
-        loop do
-          @ionian_buf << readpartial(0xFFFF)
-          break unless ::IO.select [self], nil, nil, 0
-        end
+        @ionian_buf << read_all
         
         @matches = []
         
