@@ -17,6 +17,7 @@ module Ionian
     attr_reader :protocol
     alias_method :protocol?, :protocol
     
+    
     # A convenient wrapper for TCP and Unix server sockets (UDP doesn't use
     # a server).
     #
@@ -124,7 +125,7 @@ module Ionian
     
     # Unregisters a socket accept notifier block.
     def unregister_accept_listener proc
-      @accept_listeners.delete_if {|o| o == proc} 
+      @accept_listeners.delete_if { |o| o == proc }
       proc
     end
     
