@@ -5,6 +5,15 @@ module Ionian
   # A convenient wrapper for TCP, UDP, and Unix client sockets.
   class Socket
     
+    # IP address or URL of server.
+    attr_reader :host
+    
+    # Remote port number.
+    attr_reader :port
+    
+    # Local port number.
+    attr_reader :bind_port
+    
     # Creates a new socket or wraps an existing socket.
     # 
     # Args:
@@ -55,16 +64,17 @@ module Ionian
         @socket.expression = @expression if @expression
         
         initialize_socket_methods
+        
       else
         # Initialize new socket.
         
-        # TODO: Should be able to parse the port out of host.
-        #       :port should override this parsed value.
+        # Parse host out of "host:port" if specified.
+        host_port_ary   = kwargs.fetch(:host).to_s.split ':'
         
-        @host           = kwargs.fetch :host
-        @port           = kwargs.fetch :port,       23
+        @host           = host_port_ary[0]
+        @port           = kwargs.fetch :port, host_port_ary[1].to_i || 23
         @bind_port      = kwargs.fetch :bind_port,  @port
-      
+        
         # Automatically select UDP for the multicast range. Otherwise default to TCP.
         default_protocol = :tcp
         default_protocol = :udp  if Ionian::Extension::Socket.multicast? @host

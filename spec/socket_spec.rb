@@ -83,6 +83,28 @@ describe Ionian::Socket do
   subject { Ionian::Socket.new **kwargs }
   after { subject.close if subject.respond_to? :close and not subject.closed? }
   
+  
+  describe "general" do
+    include_context "tcp listener socket"
+    
+    it { should respond_to :host }
+    it { should respond_to :port }
+    it { should respond_to :bind_port }
+    it { should respond_to :protocol }
+  end
+  
+  
+  describe "parse port from host string" do
+    include_context "tcp listener socket"
+    
+    let(:host) { 'localhost' }
+    let(:kwargs) {{ host: "#{host}:#{port}" }}
+    
+    its(:host) { should eq host }
+    its(:port) { should eq port }
+  end
+  
+  
   describe "on_match" do
     include_context "tcp listener socket"
     
@@ -119,6 +141,7 @@ describe Ionian::Socket do
       matches.count.should eq 1
     end
   end
+  
   
   describe "existing socket" do
     subject { Ionian::Socket.new existing_socket }
