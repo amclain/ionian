@@ -73,11 +73,11 @@ describe Ionian::Server do
       remote_client
       sleep 0.1
       
-      remote_client.close
-      server.close
-      
       # It returns an Ionian socket when a connection is accepted.
       client.should be_an Ionian::Socket
+      
+      remote_client.close
+      server.close
     end
     
     it "can register in #listen block" do
@@ -90,11 +90,11 @@ describe Ionian::Server do
       remote_client
       sleep 0.1
       
-      remote_client.close
-      server.close
-      
       # It returns an Ionian socket when a connection is accepted.
       client.should be_an Ionian::Socket
+      
+      remote_client.close
+      server.close
     end
     
     it "can register an accept listener" do
@@ -112,10 +112,10 @@ describe Ionian::Server do
       remote_client
       sleep 0.1
       
+      client.should be_an Ionian::Socket
+      
       remote_client.close
       server.close
-      
-      client.should be_an Ionian::Socket
     end
     
     it "can unregister an accept listener" do
@@ -137,10 +137,10 @@ describe Ionian::Server do
       remote_client
       sleep 0.1
       
+      client.should be nil
+      
       remote_client.close
       server.close
-      
-      client.should be nil
     end
     
     it "can accept multiple clients" do
