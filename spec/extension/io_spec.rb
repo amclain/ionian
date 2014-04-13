@@ -254,4 +254,49 @@ describe Ionian::Extension::IO do
     result.term.should eq terminator
   end
   
+  
+  describe "read_all" do
+    
+    it "has blocking mode" do
+      data = "CS 1234 65535\n"
+      result = nil
+      
+      # Block if no data.
+      begin
+        Timeout.timeout(1) { result = subject.read_all }
+      rescue Timeout::Error
+      end
+      
+      result.should eq nil
+      
+      client.write data
+      client.flush
+      
+      # Receive avalable data.
+      Timeout.timeout(1) { result = subject.read_all }
+      result.should eq data
+    end
+    
+    it "has nonblocking mode" do
+      data = "CS 1234 65535\n"
+      result = 'error' # Junk data. Nonblocking should return nil if no data.
+      
+      # Block if no data.
+      begin
+        Timeout.timeout(1) { result = subject.read_all nonblocking: true }
+      rescue Timeout::Error
+      end
+      
+      result.should eq nil
+      
+      client.write data
+      client.flush
+      
+      # Receive avalable data.
+      Timeout.timeout(1) { result = subject.read_all nonblocking: true }
+      result.should eq data
+    end
+    
+  end
+  
 end
