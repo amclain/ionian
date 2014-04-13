@@ -202,8 +202,15 @@ module Ionian
       
       unless @persistent
         @socket.flush
+        
         # Read in data to prevent RST packets.
+        # TODO: Shutdown read stream instead?
         @socket.read_all nonblocking: true
+        
+        # TODO: Sleep added so that data can be read on the receiving
+        # end. Can this be changed to shutdown write?
+        # Why isn't so_linger taking care of this?
+        sleep 0.01
         @socket.close
       end
       
