@@ -59,7 +59,6 @@ module Ionian
         @interface = host_port_ary[0]
         @port ||= host_port_ary[1]
         
-        # TODO: Parse port from interface if TCP.
         raise ArgumentError, "Port not specified." unless @port
         @port = @port.to_i
         
