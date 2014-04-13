@@ -93,9 +93,14 @@ module Ionian
         @persistent     = true if @protocol == :udp
         
         @reuse_addr     = kwargs.fetch :reuse_addr, false
-        @no_delay       = kwargs.fetch :no_delay,   false
         @cork           = kwargs.fetch :cork,       false
-        @linger         = kwargs.fetch :linger,     false
+        @no_delay       = kwargs.fetch :no_delay,   @persistent ? false : true
+        
+        # Default to false for persistent sockets, true for
+        # nonpersistent sockets. When nonpersistent, the socket
+        # should remain open to send data in the buffer after
+        # close is called (typically right after write).
+        @linger         = kwargs.fetch :linger,     @persistent ? false : true
       
         
         create_socket if @persistent
@@ -125,12 +130,7 @@ module Ionian
     def cmd string, **kwargs, &block
       create_socket unless @persistent
       
-      if @protocol == :udp
-        @socket.send string, 0
-      else
-        @socket.write string
-      end
-      
+      write string
       @socket.flush
       
       matches = @socket.read_match(kwargs) { |match| yield match if block_given? }
@@ -201,10 +201,9 @@ module Ionian
       end
       
       unless @persistent
+        @socket.flush
         # Read in data to prevent RST packets.
-        has_data = ::IO.select [@socket], nil, nil, 0
-        @socket.readpartial 0xFFFF if has_data
-        
+        @socket.read_all nonblocking: true
         @socket.close
       end
       
@@ -224,9 +223,9 @@ module Ionian
       when :tcp
         @socket = ::TCPSocket.new @host, @port
         @socket.extend Ionian::Extension::Socket
-        @socket.expression = @expression if @expression
-        @socket.no_delay = true if @no_delay
-        @socket.cork = true if @cork
+        
+        @socket.no_delay = @no_delay
+        @socket.cork = @cork
         
       when :udp
         @socket = ::UDPSocket.new
@@ -243,11 +242,10 @@ module Ionian
       when :unix
         @socket = ::UNIXSocket.new @host
         @socket.extend Ionian::Extension::Socket
+        
       end
       
-      # TODO: Implement SO_LINGER flag for non-persistent sockets;
-      #       especially send-and-forget.
-      @socket.linger = true if @linger
+      @socket.linger = @linger
       
       @socket.expression = @expression if @expression
       

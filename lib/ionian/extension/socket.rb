@@ -54,10 +54,14 @@ module Ionian
       # For connection-oriented protocols, prevent #close from returning
       # immediately and try to deliver any data in the send buffer if value
       # is true.
+      # 
+      # Args:
+      #   Time: Time in seconds to remain open before discarding data and
+      #         sending a RST packet.
       # ( SO_LINGER )
-      def linger= value
-        param = value ? 1 : 0
-        self.setsockopt ::Socket::SOL_SOCKET, ::Socket::SO_LINGER, [param].pack('i')
+      def linger= enable, time: 60
+        param = enable ? 1 : 0
+        self.setsockopt ::Socket::SOL_SOCKET, ::Socket::SO_LINGER, [param, time.to_i].pack('ii')
       end
       
       alias_method :linger?, :linger

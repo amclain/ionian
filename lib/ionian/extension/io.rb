@@ -1,3 +1,5 @@
+Thread.abort_on_exception = true
+
 module Ionian
   module Extension
     # A mixin for IO objects that allows regular expression matching

@@ -1,6 +1,9 @@
 require 'socket'
 require 'ionian/socket'
 
+Thread.abort_on_exception = true
+
+
 module Ionian
   
   # A convenient wrapper for TCP, UDP, and Unix server sockets.
