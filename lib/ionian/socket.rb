@@ -36,6 +36,8 @@ module Ionian
     #   no_delay:   Set true to enable the TCP_NODELAY flag. Disables Nagle algorithm.
     #   cork:       Set true to enable the TCP_CORK flag. Buffers multiple writes
     #               into one segment.
+    #   linger:     Set true to enable the SO_LINGER flag. When #close is called,
+    #               waits for the send buffer to empty before closing the socket.
     #   expression: Overrides the #read_match regular expression for received data.
     def initialize existing_socket = nil, **kwargs
       @socket = existing_socket
@@ -93,6 +95,7 @@ module Ionian
         @reuse_addr     = kwargs.fetch :reuse_addr, false
         @no_delay       = kwargs.fetch :no_delay,   false
         @cork           = kwargs.fetch :cork,       false
+        @linger         = kwargs.fetch :linger,     false
       
         
         create_socket if @persistent
@@ -244,6 +247,7 @@ module Ionian
       
       # TODO: Implement SO_LINGER flag for non-persistent sockets;
       #       especially send-and-forget.
+      @socket.linger = true if @linger
       
       @socket.expression = @expression if @expression
       
