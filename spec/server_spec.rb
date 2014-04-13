@@ -143,6 +143,25 @@ describe Ionian::Server do
       client.should be nil
     end
     
+    it "can accept multiple clients" do
+      clients = []
+      num_connections = 5
+      
+      server = Ionian::Server.new(**kwargs) { |con| clients << con }
+      
+      # Create client connections.
+      num_connections.times do
+        sock = Ionian::Socket.new host: 'localhost', port: port, protocol: protocol
+        sleep 0.1
+        sock.close
+      end
+      
+      server.close
+      
+      # It returns an Ionian socket when a connection is accepted.
+      clients.count.should eq num_connections
+    end
+    
   end
   
   

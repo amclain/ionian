@@ -87,19 +87,18 @@ module Ionian
       register_accept_listener &block if block_given?
       
       @accept_thread ||= Thread.new do
-        # Package in an Ionian::Socket
-        begin
-          client = Ionian::Socket.new @server.accept
-          
-          @accept_listeners.each do |listener|
-            listener.call client
+        loop do
+          # Package in an Ionian::Socket
+          begin
+            client = Ionian::Socket.new @server.accept
+            @accept_listeners.each { |listener| listener.call client }
+          rescue Errno::EBADF
+            # This ignores the connection if the client closed it before it
+            # could be accepted.
+          rescue IOError
+            # This ignores the connection if the client closed it before it
+            # could be accepted.
           end
-        rescue Errno::EBADF
-          # This ignores the connection if the client closed it before it
-          # could be accepted.
-        rescue IOError
-          # This ignores the connection if the client closed it before it
-          # could be accepted.
         end
       end
     end
@@ -107,7 +106,7 @@ module Ionian
     # Shutdown the server socket and stop listening for connections.
     def close
       @server.close if @server
-      @accept_thread.join if @accept_thread
+      @accept_thread.kill
       @accept_thread = nil
     end
     
