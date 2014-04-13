@@ -31,7 +31,7 @@ module Ionian
       # Args:
       #   Timeout: Number of seconds to wait for data until
       #     giving up. Set to nil for blocking.
-      def has_data?(timeout: 0)
+      def has_data? timeout: 0
         ::IO.select([self], nil, nil, timeout) ? true : false
       end
       
@@ -53,8 +53,11 @@ module Ionian
       
       # Read all data in the buffer.
       # An alternative to using #readpartial with a large length.
-      # Blocks until data is available.
-      def read_all
+      # Blocks until data is available unless nonblocking: true.
+      # If nonblocking, returns nil if no data available.
+      def read_all nonblocking: false
+        return nil if nonblocking and not has_data?
+        
         # Block until data has arrived.
         data =  readpartial 0xFFFF
         # If there is more data in the buffer, retrieve it nonblocking.
