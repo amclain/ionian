@@ -60,6 +60,8 @@ module Ionian
       #         sending a RST packet.
       # ( SO_LINGER )
       def linger= enable, time: 60
+        # TODO: Passing a kwarg doesn't work here because of the
+        #       assignment operator. Causes parser error.
         param = enable ? 1 : 0
         self.setsockopt ::Socket::SOL_SOCKET, ::Socket::SO_LINGER, [param, time.to_i].pack('ii')
       end
