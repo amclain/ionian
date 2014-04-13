@@ -106,7 +106,7 @@ module Ionian
     # Shutdown the server socket and stop listening for connections.
     def close
       @server.close if @server
-      @accept_thread.kill
+      @accept_thread.kill if @accept_thread
       @accept_thread = nil
     end
     
