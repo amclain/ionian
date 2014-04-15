@@ -100,7 +100,9 @@ module Ionian
         # nonpersistent sockets. When nonpersistent, the socket
         # should remain open to send data in the buffer after
         # close is called (typically right after write).
-        @linger         = kwargs.fetch :linger,     @persistent ? false : true
+        # @linger         = kwargs.fetch :linger,     @persistent ? false : true
+        # TODO: For some reason linger = true is causing tests to fail.
+        @linger         = kwargs.fetch :linger,     false
       
         
         create_socket if @persistent
@@ -210,7 +212,7 @@ module Ionian
         # TODO: Sleep added so that data can be read on the receiving
         # end. Can this be changed to shutdown write?
         # Why isn't so_linger taking care of this?
-        sleep 0.01
+        # sleep 0.01
         @socket.close
       end
       
