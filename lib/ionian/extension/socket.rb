@@ -35,7 +35,7 @@ module Ionian
       # Permit sending broadcast datagrams if true.
       # ( SO_BROADCAST )
       def broadcast= value
-        param = value ? 1 : 0
+        param = (!!value && value != 0) ? 1 : 0
         self.setsockopt ::Socket::SOL_SOCKET, ::Socket::SO_BROADCAST, [param].pack('i')
       end
       
@@ -62,7 +62,7 @@ module Ionian
       def linger= enable, time: 60
         # TODO: Passing a kwarg doesn't work here because of the
         #       assignment operator. Causes parser error.
-        param = enable ? 1 : 0
+        param = (!!enable && enable != 0) ? 1 : 0
         self.setsockopt ::Socket::SOL_SOCKET, ::Socket::SO_LINGER, [param, time.to_i].pack('ii')
       end
       
@@ -81,7 +81,7 @@ module Ionian
       # Allows local address reuse if true.
       # ( SO_REUSEADDR )
       def reuse_addr= value
-        param = value ? 1 : 0
+        param = (!!value && value != 0) ? 1 : 0
         self.setsockopt ::Socket::SOL_SOCKET, ::Socket::SO_REUSEADDR, [param].pack('i')
       end
       
@@ -113,7 +113,7 @@ module Ionian
       # Disables the Nagle algorithm if true.
       # ( TCP_NODELAY )
       def no_delay= value
-        param = value ? 1 : 0
+        param = (!!value && value != 0) ? 1 : 0
         self.setsockopt ::Socket::IPPROTO_TCP, ::Socket::TCP_NODELAY, [param].pack('i')
       end
       
@@ -138,7 +138,7 @@ module Ionian
       # Linux only.
       # ( TCP_CORK )
       def cork= value
-        param = value ? 1 : 0
+        param = (!!value && value != 0) ? 1 : 0
         self.setsockopt ::Socket::IPPROTO_TCP, ::Socket::TCP_CORK, [param].pack('i')
       end
       
@@ -225,7 +225,7 @@ module Ionian
       # Enables loopback of outgoing multicasts if true.
       # ( IP_MULTICAST_LOOP )
       def ip_multicast_loop= value
-        param = value ? 1 : 0
+        param = (!!value && value != 0) ? 1 : 0
         self.setsockopt ::Socket::IPPROTO_IP, ::Socket::IP_MULTICAST_LOOP, [param].pack('C')
       end
       
