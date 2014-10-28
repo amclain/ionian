@@ -5,10 +5,10 @@ task :default => [:test]
 
 # Run tests.
 RSpec::Core::RakeTask.new :test do |c|
-  c.rspec_opts = 
-    '--color '\
-    '--format Fivemat '\
-    # '--fail-fast'
+  # c.rspec_opts = 
+  #   '--color '\
+  #   '--format Fivemat '\
+  #   # '--fail-fast'
 end
 
 # Build the gem.

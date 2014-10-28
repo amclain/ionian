@@ -28,6 +28,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'yard'
   s.add_development_dependency 'pry'
   s.add_development_dependency 'rb-readline'
-  s.add_development_dependency 'rspec'
+  s.add_development_dependency 'rspec', '~>3.1.0'
+  s.add_development_dependency 'rspec-its', '~> 1.0.1'
   s.add_development_dependency 'fivemat'
 end
