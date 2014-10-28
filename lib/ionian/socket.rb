@@ -263,7 +263,8 @@ module Ionian
         
       end
       
-      @socket.linger = @linger
+      # Windows complains at SO_LINGER, so only set it if it was specified.
+      @socket.linger = @linger if @linger
       
       @socket.expression = @expression if @expression
       
