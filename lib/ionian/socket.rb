@@ -26,12 +26,14 @@ module Ionian
     #   host:       IP or hostname to connect to. Can contain the port in the format "host:port".
     #   port:       Connection's port number. Default is 23. Unused by :unix protocol.
     #   protocol:   Type of socket to create. :tcp, :udp, :unix. Default is :tcp.
-    #               :udp will be automatically selected for addresses in the multicast range.
+    #               :udp will be automatically selected for addresses in the multicast range,
+    #               or if the broadcast flag is set.
     #   persistent: The socket remains open after data is sent if this is true.
     #               The socket closes after data is sent and a packet is received
     #               if this is false. Default is true.
     #   bind_port:  Local UDP port to bind to for receiving data, if different than
     #               the remote port being connected to.
+    #   broadcast:  Set true to enable the SO_BROADCAST flag. Sets protocol to :udp implicitly.
     #   reuse_addr: Set true to enable the SO_REUSEADDR flag. Allows local address reuse.
     #   no_delay:   Set true to enable the TCP_NODELAY flag. Disables Nagle algorithm.
     #   cork:       Set true to enable the TCP_CORK flag. Buffers multiple writes
@@ -67,7 +69,7 @@ module Ionian
           @protocol = :unix
         end
         
-        @persistent     = true # Existing sockets are always persistent.
+        @persistent = true # Existing sockets are always persistent.
         
         @socket.expression = @expression if @expression
         
@@ -81,12 +83,15 @@ module Ionian
         
         @host           = host_port_ary[0]
         @port           = kwargs.fetch :port, host_port_ary[1].to_i || 23
-        @bind_port      = kwargs.fetch :bind_port,  @port
+        @bind_port      = kwargs.fetch :bind_port, @port
+        
+        @broadcast      = kwargs.fetch :broadcast, false
         
         # Automatically select UDP for the multicast range. Otherwise default to TCP.
         default_protocol = :tcp
         default_protocol = :udp  if Ionian::Extension::Socket.multicast? @host
         default_protocol = :unix if @host.start_with? '/'
+        default_protocol = :udp  if @broadcast
         
         @protocol       = kwargs.fetch :protocol,   default_protocol
         @persistent     = kwargs.fetch :persistent, true
@@ -241,7 +246,11 @@ module Ionian
         @socket.extend Ionian::Extension::Socket
         
         @socket.reuse_addr = true if
-          @reuse_addr or Ionian::Extension::Socket.multicast? @host
+          @reuse_addr or
+          @broadcast or
+          Ionian::Extension::Socket.multicast? @host
+          
+        @socket.broadcast = true if @broadcast
         
         @socket.bind ::Socket::INADDR_ANY, @bind_port
         @socket.connect @host, @port
