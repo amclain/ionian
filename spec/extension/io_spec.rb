@@ -79,7 +79,7 @@ describe Ionian::Extension::IO do
     sleep 0.1
     thread.kill
     
-    Timeout.timeout 1 do; thread.join; end
+    Timeout.timeout(1) { thread.join }
     block_run.should eq true
   end
   
@@ -112,7 +112,7 @@ describe Ionian::Extension::IO do
     sleep 0.1
     thread.kill
     
-    Timeout.timeout 1 do; thread.join; end
+    Timeout.timeout(1) { thread.join }
     block_run.should eq true
   end
   
