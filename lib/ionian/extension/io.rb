@@ -29,15 +29,16 @@ module Ionian
         @ionian_build_methods = true
       end
       
-      # Returns true if there is data in the receive buffer.
-      # Args:
-      #   Timeout: Number of seconds to wait for data until
-      #     giving up. Set to nil for blocking.
+      # @return [Boolean] True if there is data in the receive buffer.
+      # 
+      # @param timeout [Numeric] Number of seconds to wait for data until
+      #   giving up. Set to nil for blocking.
+      # 
       def has_data? timeout: 0
         ::IO.select([self], nil, nil, timeout) ? true : false
       end
       
-      # Returns the regular expression used for #read_match.
+      # Returns the regular expression used for {#read_match}.
       def expression
         @ionian_expression
       end
@@ -68,31 +69,40 @@ module Ionian
       end
       
       # Read matched data from the buffer.
-      # This method SHOULD NOT be used if #run_match is used.
-      #
-      # Passes matches to the block (do |match|). If there are multiple
-      # matches, the block is called multiple times.
-      #
-      # Returns an array of matches.
-      # Returns nil if no data was received within the timeout period.
-      #
+      # This method SHOULD NOT be used if {#run_match} is used.
+      # 
       # Junk data that could exist before a match in the buffer can
       # be accessed with match.pre_match.
-      #
+      # 
       # Data at the end of the buffer that is not matched can be accessed
       # in the last match with match.post_match. This data remains in the
-      # buffer for the next #read_match cycle. This is helpful for protocols
+      # buffer for the next {#read_match} cycle. This is helpful for protocols
       # like RS232 that do not have packet boundries.
-      #
-      # kwargs:
-      #   timeout:        Timeout in seconds IO::select will block.
-      #   expression:     Override the expression match for this single
-      #                   method call.
-      #   notify:         Set to false to skip notifying match listener procs.
-      #   skip_select:    Skip over the IO::select statement. Use if you
-      #                   are calling IO::select ahead of this method.
-      #   build_methods:  Build accessor methods from named capture groups.
-      #                   Enabled by default.
+      # 
+      # 
+      # @yieldparam match [MatchData] If there are multiple matches, the block
+      #   is called multiple times.
+      # 
+      # @return [Array<MatchData>, nil] Returns an array of matches.
+      #   Returns nil if no data was received within the timeout period.
+      # 
+      # 
+      # @option kwargs [Numeric] :timeout (nil) Timeout in seconds IO::select
+      #   will block. Blocks indefinitely by default. Set to 0 for nonblocking.
+      # 
+      # @option kwargs [Regexp, String] :expression Override the expression
+      #   match for this single method call.
+      # 
+      # @option kwargs [Boolean] :notify (true) Set to false to skip notifying
+      #   match listener procs.
+      # 
+      # @option kwargs [Boolean] :skip_select (false) Skip over the
+      #   IO::select statement. Use if you are calling IO::select ahead of
+      #   this method.
+      # 
+      # @option kwargs [Boolean] :build_methods (true) Build accessor methods
+      #   from named capture groups.
+      # 
       def read_match **kwargs, &block
         timeout       = kwargs.fetch :timeout,        @ionian_timeout
         notify        = kwargs.fetch :notify,         true
@@ -140,8 +150,8 @@ module Ionian
       end
      
       # Start a thread that checks for data and notifies listeners (do |match, socket|).
-      # Passes kwargs to #read_match.
-      # This method SHOULD NOT be used if #read_match is used.
+      # Passes kwargs to {#read_match}.
+      # This method SHOULD NOT be used if {#read_match} is used.
       def run_match **kwargs
         @match_listener ||= Thread.new do
           begin
@@ -165,10 +175,15 @@ module Ionian
         @ionian_buf = ''
       end
       
-      # Register a block to be called when #run_match receives matched data.
+      # Register a block to be called when {#run_match} receives matched data.
       # Method callbacks can be registered with &object.method(:method).
       # Returns a reference to the given block.
-      # block = ionian_socket.register_observer { ... }
+      # 
+      # @example
+      #   registered_block = ionian_socket.register_observer { |match| ... }
+      # 
+      # @example
+      #   registered_block = ionian_socket.register_observer &my_object.method(:foo)
       def register_observer &block
         @ionian_listeners << block unless @ionian_listeners.include? block
         block

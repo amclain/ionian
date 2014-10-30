@@ -63,14 +63,12 @@ module Ionian
     #   When #close is called, waits for the send buffer to empty before closing
     #   the socket.
     # 
+    # @option kwargs [Regexp, String] :expression Overrides the
+    #   {Ionian::Extension::IO#read_match} regular expression for received data.
     # 
-    # @option kwargs [Regexp, String] :expression Overrides the #read_match
-    #   regular expression for received data.
     # 
-    # @yield [socket] This socket is yielded to the block. Socket flushes and
-    #   closes when exiting the block.
-    # 
-    # @yieldparam socket [Ionian::Socket] This socket (self).
+    # @yieldparam socket [Ionian::Socket] This socket is yielded to the block.
+    #   Socket flushes and closes when exiting the block.
     # 
     def initialize existing_socket = nil, **kwargs, &block
       @socket = existing_socket
@@ -170,13 +168,18 @@ module Ionian
     end
     
     # Send a command (data) to the socket.
-    # Returns an array of received matches.
-    # Block yields received match.
-    # See Ionian::Extension::IO#read_match.
-    def cmd string, **kwargs, &block
+    # 
+    # @param [Hash] kwargs Pass through to {Ionian::Extension::IO#read_match}.
+    # 
+    # @return [Array<MatchData>] An array of received matches.
+    # 
+    # @yieldparam match [MatchData] Received match.
+    # 
+    # @see Ionian::Extension::IO#read_match
+    def cmd data, **kwargs, &block
       create_socket unless @persistent
       
-      write string
+      write data
       @socket.flush
       
       matches = @socket.read_match(kwargs) { |match| yield match if block_given? }
