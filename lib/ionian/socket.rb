@@ -41,7 +41,11 @@ module Ionian
     #   linger:     Set true to enable the SO_LINGER flag. When #close is called,
     #               waits for the send buffer to empty before closing the socket.
     #   expression: Overrides the #read_match regular expression for received data.
-    def initialize existing_socket = nil, **kwargs
+    #
+    # Block:
+    #   Socket is yielded to the block. Socket flushes and closes when
+    #   exiting the block.
+    def initialize existing_socket = nil, **kwargs, &block
       @socket = existing_socket
       
       @ionian_listeners = []
@@ -111,6 +115,14 @@ module Ionian
       
         
         create_socket if @persistent
+      end
+      
+      if block
+        block.call self
+        unless self.closed?
+          self.flush
+          self.close
+        end
       end
     end
         
