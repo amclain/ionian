@@ -105,6 +105,50 @@ describe Ionian::Socket do
   end
   
   
+  describe "initializer block" do
+    include_context "tcp listener socket"
+    
+    around(:each) { |test| Timeout.timeout(1) { test.run } }
+    
+    let(:data) { "test initializer block\n" }
+    
+    subject {
+      Ionian::Socket.new **kwargs do |socket|
+        socket.write data
+      end
+      # Socket flushes and closes when block exits.
+    }
+    
+    shared_examples "initializer block" do
+      specify do
+        subject
+        sleep 0.1
+        client.closed?.should eq false
+        client.readpartial(0xFFFF).should eq data
+        sleep 0.1
+        subject.closed?.should eq true
+      end
+    end
+    
+    include_examples "initializer block"
+    
+    
+    describe "socket is closed by developer" do
+      include_examples "initializer block"
+      
+      subject {
+        Ionian::Socket.new **kwargs do |socket|
+          socket.write data
+          
+          # It is NOT necessary to close the socket inside the block,
+          # but it shouldn't raise an exception if a developer does it.
+          socket.close
+        end
+      }
+    end
+  end
+  
+  
   describe "on_match" do
     include_context "tcp listener socket"
     
