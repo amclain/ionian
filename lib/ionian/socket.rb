@@ -22,29 +22,56 @@ module Ionian
     
     # Creates a new socket or wraps an existing socket.
     # 
-    # Args:
-    #   host:       IP or hostname to connect to. Can contain the port in the format "host:port".
-    #   port:       Connection's port number. Default is 23. Unused by :unix protocol.
-    #   protocol:   Type of socket to create. :tcp, :udp, :unix. Default is :tcp.
-    #               :udp will be automatically selected for addresses in the multicast range,
-    #               or if the broadcast flag is set.
-    #   persistent: The socket remains open after data is sent if this is true.
-    #               The socket closes after data is sent and a packet is received
-    #               if this is false. Default is true.
-    #   bind_port:  Local UDP port to bind to for receiving data, if different than
-    #               the remote port being connected to.
-    #   broadcast:  Set true to enable the SO_BROADCAST flag. Sets protocol to :udp implicitly.
-    #   reuse_addr: Set true to enable the SO_REUSEADDR flag. Allows local address reuse.
-    #   no_delay:   Set true to enable the TCP_NODELAY flag. Disables Nagle algorithm.
-    #   cork:       Set true to enable the TCP_CORK flag. Buffers multiple writes
-    #               into one segment.
-    #   linger:     Set true to enable the SO_LINGER flag. When #close is called,
-    #               waits for the send buffer to empty before closing the socket.
-    #   expression: Overrides the #read_match regular expression for received data.
-    #
-    # Block:
-    #   Socket is yielded to the block. Socket flushes and closes when
-    #   exiting the block.
+    # 
+    # @param existing_socket [Socket] An instantiated socket to be wrapped in
+    #   and returned as an {Ionian::Socket} (for example, TCPSocket). A new
+    #   socket will be created if this parameter is nil.
+    # 
+    # 
+    # @param kwargs [Hash] :host is mandatory.
+    # 
+    # @option kwargs [String] :host IP or hostname to connect to.
+    #   Can contain the port in the format "host:port".
+    # 
+    # @option kwargs [Fixnum] :port (23) Connection's port number. Unused by the
+    #   :unix protocol.
+    # 
+    # @option kwargs [:tcp, :udp, :unix] :protocol (:tcp) Type of socket to create.
+    #   :udp will be automatically selected for addresses in the multicast
+    #   range, or if the broadcast flag is set.
+    # 
+    # @option kwargs [Boolean] :persistent (true) The socket remains open after
+    #   data is sent if this is true. The socket closes after data is sent and
+    #   a packet is received if this is false.
+    # 
+    # @option kwargs [Boolean] :bind_port (:port) Local UDP port to bind to for
+    #   receiving data, if different than the remote port being connected to.
+    # 
+    # @option kwargs [Boolean] :broadcast (false) Enable the SO_BROADCAST flag.
+    #   Sets protocol to :udp implicitly.
+    # 
+    # @option kwargs [Boolean] :reuse_addr (false) Enable the SO_REUSEADDR flag.
+    #   Allows local address reuse.
+    # 
+    # @option kwargs [Boolean] :no_delay (false) Enable the TCP_NODELAY flag.
+    #   Disables Nagle algorithm.
+    # 
+    # @option kwargs [Boolean] :cork (false) Enable the TCP_CORK flag.
+    #   Buffers multiple writes into one segment.
+    # 
+    # @option kwargs [Boolean] :linger (false) Enable the SO_LINGER flag.
+    #   When #close is called, waits for the send buffer to empty before closing
+    #   the socket.
+    # 
+    # 
+    # @option kwargs [Regexp, String] :expression Overrides the #read_match
+    #   regular expression for received data.
+    # 
+    # @yield [socket] This socket is yielded to the block. Socket flushes and
+    #   closes when exiting the block.
+    # 
+    # @yieldparam socket [Ionian::Socket] This socket (self).
+    # 
     def initialize existing_socket = nil, **kwargs, &block
       @socket = existing_socket
       
