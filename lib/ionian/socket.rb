@@ -281,7 +281,8 @@ module Ionian
         @socket.extend Ionian::Extension::Socket
         
         @socket.no_delay = @no_delay
-        @socket.cork = @cork
+        # Windows complains at SO_CORK, so only set it if it was specified.
+        @socket.cork = @cork if @cork
         
       when :udp
         @socket = ::UDPSocket.new

@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    ionian (0.6.8)
+    ionian (0.6.10)
 
 GEM
   remote: https://rubygems.org/
