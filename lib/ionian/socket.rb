@@ -108,10 +108,10 @@ module Ionian
         # Initialize new socket.
         
         # Parse host out of "host:port" if specified.
-        host_port_ary   = kwargs.fetch(:host).to_s.split ':'
+        host_port_array = kwargs.fetch(:host).to_s.split ':'
         
-        @host           = host_port_ary[0]
-        @port           = kwargs.fetch :port, host_port_ary[1].to_i || 23
+        @host           = host_port_array[0]
+        @port           = kwargs.fetch :port, (host_port_array[1] || 23).to_i
         @bind_port      = kwargs.fetch :bind_port, @port
         
         @broadcast      = kwargs.fetch :broadcast, false

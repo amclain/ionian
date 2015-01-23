@@ -105,6 +105,19 @@ describe Ionian::Socket do
   end
   
   
+  describe "port defaults to 23" do
+    include_context "tcp listener socket"
+    
+    let(:kwargs) {{ host: 'localhost' }}
+    
+    specify do
+      tcp_socket_double = double()
+      TCPSocket.should_receive(:new).with('localhost', 23) { tcp_socket_double }
+      tcp_socket_double.should_receive(:setsockopt)
+    end
+  end
+  
+  
   describe "initializer block" do
     include_context "tcp listener socket"
     
