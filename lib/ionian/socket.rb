@@ -40,6 +40,9 @@ module Ionian
     #   :udp will be automatically selected for addresses in the multicast
     #   range, or if the broadcast flag is set.
     # 
+    # @option kwargs [Fixnum] :connect_timeout (nil) Number of seconds to wait
+    #   when connecting before timing out. Raises Errno::EHOSTUNREACH.
+    # 
     # @option kwargs [Boolean] :persistent (true) The socket remains open after
     #   data is sent if this is true. The socket closes after data is sent and
     #   a packet is received if this is false.
@@ -113,6 +116,7 @@ module Ionian
         @host           = host_port_array[0]
         @port           = kwargs.fetch :port, (host_port_array[1] || 23).to_i
         @bind_port      = kwargs.fetch :bind_port, @port
+        @connect_timeout = kwargs.fetch :connect_timeout, nil
         
         @broadcast      = kwargs.fetch :broadcast, false
         
@@ -275,46 +279,52 @@ module Ionian
     def create_socket
       @socket.close if @socket and not @socket.closed?
       
-      case @protocol
-      when :tcp
-        @socket = ::TCPSocket.new @host, @port
-        @socket.extend Ionian::Extension::Socket
-        
-        @socket.no_delay = @no_delay
-        # Windows complains at SO_CORK, so only set it if it was specified.
-        @socket.cork = @cork if @cork
-        
-      when :udp
-        @socket = ::UDPSocket.new
-        @socket.extend Ionian::Extension::Socket
-        
-        @socket.reuse_addr = true if
-          @reuse_addr or
-          @broadcast or
-          Ionian::Extension::Socket.multicast? @host
+      begin
+        Timeout.timeout(@connect_timeout) do
+          case @protocol
+          when :tcp
+            @socket = ::TCPSocket.new @host, @port
+            @socket.extend Ionian::Extension::Socket
+            
+            @socket.no_delay = @no_delay
+            # Windows complains at SO_CORK, so only set it if it was specified.
+            @socket.cork = @cork if @cork
+            
+          when :udp
+            @socket = ::UDPSocket.new
+            @socket.extend Ionian::Extension::Socket
+            
+            @socket.reuse_addr = true if
+              @reuse_addr or
+              @broadcast or
+              Ionian::Extension::Socket.multicast? @host
+              
+            @socket.broadcast = true if @broadcast
+            
+            @socket.bind ::Socket::INADDR_ANY, @bind_port
+            @socket.connect @host, @port
+            
+            @socket.ip_add_membership if Ionian::Extension::Socket.multicast? @host
+            
+          when :unix
+            @socket = ::UNIXSocket.new @host
+            @socket.extend Ionian::Extension::Socket
+            
+          end
           
-        @socket.broadcast = true if @broadcast
-        
-        @socket.bind ::Socket::INADDR_ANY, @bind_port
-        @socket.connect @host, @port
-        
-        @socket.ip_add_membership if Ionian::Extension::Socket.multicast? @host
-        
-      when :unix
-        @socket = ::UNIXSocket.new @host
-        @socket.extend Ionian::Extension::Socket
-        
+          # Windows complains at SO_LINGER, so only set it if it was specified.
+          @socket.linger = @linger if @linger
+          
+          @socket.expression = @expression if @expression
+          
+          # Register listeners.
+          @ionian_listeners.each { |proc| @socket.on_match &proc }
+          
+          initialize_socket_methods
+        end
+      rescue Timeout::Error
+        raise Errno::EHOSTUNREACH
       end
-      
-      # Windows complains at SO_LINGER, so only set it if it was specified.
-      @socket.linger = @linger if @linger
-      
-      @socket.expression = @expression if @expression
-      
-      # Register listeners.
-      @ionian_listeners.each { |proc| @socket.on_match &proc }
-      
-      initialize_socket_methods
     end
     
     # Expose the @socket methods that haven't been defined by this class.

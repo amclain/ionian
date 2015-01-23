@@ -81,7 +81,9 @@ describe Ionian::Socket do
   let(:kwargs) {{ host: 'localhost', port: port }}
   
   subject { Ionian::Socket.new **kwargs }
-  after { subject.close if subject.respond_to? :close and not subject.closed? }
+  
+  # TODO: Nest tests to get rid of $skip_after and "tcp listener socket" context.
+  after { subject.close if not $skip_after and subject.respond_to? :close and not subject.closed? }
   
   
   describe "general" do
@@ -441,6 +443,19 @@ describe Ionian::Socket do
     its(:reuse_addr?) { should eq true }
     
     it_behaves_like "a persistent ionian socket"
+  end
+  
+  
+  describe "connection timeout" do
+    let(:timeout) { 2 }
+    
+    specify do
+      $skip_after = true
+      Timeout.timeout(timeout + 1) {
+        expect { Ionian::Socket.new host: '192.168.254.253:51234', connect_timeout: timeout }
+          .to raise_error Errno::EHOSTUNREACH
+      }
+    end
   end
   
 end
