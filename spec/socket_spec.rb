@@ -149,6 +149,22 @@ describe Ionian::Socket do
   end
   
   
+  describe "run_match" do
+    include_context "tcp listener socket"
+    
+    it "should terminate gracefully when the socket is closed" do
+      subject.run_match
+      
+      sleep 0.1
+      client.write "test\n"
+      client.flush
+      sleep 0.1
+      
+      subject.close
+    end
+  end
+  
+  
   describe "on_match" do
     include_context "tcp listener socket"
     
