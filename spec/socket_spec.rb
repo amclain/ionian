@@ -86,137 +86,141 @@ describe Ionian::Socket do
   # TODO: Nest tests to get rid of skip_after_block and "tcp listener socket" context.
   after { subject.close if not skip_after_block and subject.respond_to? :close and not subject.closed? }
   
-  
-  describe "general" do
+  describe do
     include_context "tcp listener socket"
     
-    it { should respond_to :host }
-    it { should respond_to :port }
-    it { should respond_to :bind_port }
-    it { should respond_to :protocol }
-  end
-  
-  
-  describe "parse port from host string" do
-    include_context "tcp listener socket"
-    
-    let(:host) { 'localhost' }
-    let(:kwargs) {{ host: "#{host}:#{port}" }}
-    
-    its(:host) { should eq host }
-    its(:port) { should eq port }
-  end
-  
-  
-  describe "port defaults to 23" do
-    include_context "tcp listener socket"
-    
-    let(:kwargs) {{ host: 'localhost' }}
-    
-    specify do
-      tcp_socket_double = double()
-      TCPSocket.should_receive(:new).with('localhost', 23) { tcp_socket_double }
-      tcp_socket_double.should_receive(:setsockopt)
+    describe "general" do
+      it { should respond_to :host }
+      it { should respond_to :port }
+      it { should respond_to :bind_port }
+      it { should respond_to :protocol }
     end
-  end
-  
-  
-  describe "initializer block" do
-    include_context "tcp listener socket"
     
-    around(:each) { |test| Timeout.timeout(1) { test.run } }
     
-    let(:data) { "test initializer block\n" }
+    describe "parse port from host string" do
+      let(:host) { 'localhost' }
+      let(:kwargs) {{ host: "#{host}:#{port}" }}
+      
+      its(:host) { should eq host }
+      its(:port) { should eq port }
+    end
     
-    subject {
-      Ionian::Socket.new **kwargs do |socket|
-        socket.write data
-      end
-      # Socket flushes and closes when block exits.
-    }
     
-    shared_examples "initializer block" do
+    describe "port defaults to 23" do
+      let(:kwargs) {{ host: 'localhost' }}
+      
       specify do
-        subject
-        sleep 0.1
-        client.closed?.should eq false
-        client.readpartial(0xFFFF).should eq data
-        sleep 0.1
-        subject.closed?.should eq true
+        tcp_socket_double = double()
+        TCPSocket.should_receive(:new).with('localhost', 23) { tcp_socket_double }
+        tcp_socket_double.should_receive(:setsockopt)
       end
     end
     
-    include_examples "initializer block"
+    
+    describe "with only host and port arguments given" do
+      include_examples "ionian interface"
+      include_examples "socket extension interface"
+      
+      its(:protocol)    { should eq :tcp }
+      its(:protocol?)   { should eq :tcp }
+      its(:persistent?) { should eq true }
+      its(:closed?)     { should eq false }
+      
+      it { should respond_to :cmd }
+    end
     
     
-    describe "socket is closed by developer" do
-      include_examples "initializer block"
+    describe "initializer block" do
+      around(:each) { |test| Timeout.timeout(1) { test.run } }
+      
+      let(:data) { "test initializer block\n" }
       
       subject {
         Ionian::Socket.new **kwargs do |socket|
           socket.write data
-          
-          # It is NOT necessary to close the socket inside the block,
-          # but it shouldn't raise an exception if a developer does it.
-          socket.close
         end
+        # Socket flushes and closes when block exits.
       }
-    end
-  end
-  
-  
-  describe "run_match" do
-    include_context "tcp listener socket"
-    
-    it "should terminate gracefully when the socket is closed" do
-      subject.run_match
       
-      sleep 0.1
-      client.write "test\n"
-      client.flush
-      sleep 0.1
+      shared_examples "initializer block" do
+        specify do
+          subject
+          sleep 0.1
+          client.closed?.should eq false
+          client.readpartial(0xFFFF).should eq data
+          sleep 0.1
+          subject.closed?.should eq true
+        end
+      end
       
-      subject.close
-    end
-  end
-  
-  
-  describe "on_match" do
-    include_context "tcp listener socket"
-    
-    it "returns a match only once when run_match thread is running" do
-      data = "test on_match\n"
+      include_examples "initializer block"
       
-      matches = []
-      subject.on_match { matches << 1 }
-      match_thread = subject.run_match
       
-      sleep 0.1 # Wait for the client socket to be accepted.
-      client.write data
-      client.flush
-      sleep 0.1
-      
-      match_thread.kill
-      
-      matches.count.should eq 1
+      describe "socket is closed by developer" do
+        include_examples "initializer block"
+        
+        subject {
+          Ionian::Socket.new **kwargs do |socket|
+            socket.write data
+            
+            # It is NOT necessary to close the socket inside the block,
+            # but it shouldn't raise an exception if a developer does it.
+            socket.close
+          end
+        }
+      end
     end
     
-    it "returns a match only once when run_match thread is not running" do
-      data = "test on_match\n"
-      
-      matches = []
-      subject.on_match { matches << 1 }
-      
-      sleep 0.1 # Wait for the client socket to be accepted.
-      client.write data
-      client.flush
-      sleep 0.1
-      
-      match = subject.read_match
-      
-      matches.count.should eq 1
+    
+    describe "run_match" do
+      it "should terminate gracefully when the socket is closed" do
+        subject.run_match
+        
+        sleep 0.1
+        client.write "test\n"
+        client.flush
+        sleep 0.1
+        
+        subject.close
+      end
     end
-  end
+    
+    
+    describe "on_match" do
+      let(:data) { "test on_match\n" }
+      
+      it "returns a match only once when run_match thread is running" do
+        matches = []
+        subject.on_match { matches << 1 }
+        match_thread = subject.run_match
+        
+        sleep 0.1 # Wait for the client socket to be accepted.
+        client.write data
+        client.flush
+        sleep 0.1
+        
+        match_thread.kill
+        
+        matches.count.should eq 1
+      end
+      
+      it "returns a match only once when run_match thread is not running" do
+        matches = []
+        subject.on_match { matches << 1 }
+        
+        sleep 0.1 # Wait for the client socket to be accepted.
+        client.write data
+        client.flush
+        sleep 0.1
+        
+        match = subject.read_match
+        
+        matches.count.should eq 1
+      end
+    end
+    
+    
+  end # "tcp listener socket" describe
   
   
   describe "existing socket" do
@@ -268,21 +272,6 @@ describe Ionian::Socket do
         subject.persistent?.should eq true
       end
     end
-  end
-  
-  
-  describe "with only host and port arguments given" do
-    include_context "tcp listener socket"
-    
-    include_examples "ionian interface"
-    include_examples "socket extension interface"
-    
-    its(:protocol)    { should eq :tcp }
-    its(:protocol?)   { should eq :tcp }
-    its(:persistent?) { should eq true }
-    its(:closed?)     { should eq false }
-    
-    it { should respond_to :cmd }
   end
   
   
