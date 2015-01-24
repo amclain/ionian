@@ -86,6 +86,11 @@ describe Ionian::Socket do
   # TODO: Nest tests to get rid of skip_after_block and "tcp listener socket" context.
   after { subject.close if not skip_after_block and subject.respond_to? :close and not subject.closed? }
   
+  def wait_until_client
+    Thread.pass until client
+  end
+  
+  
   describe do
     include_context "tcp listener socket"
     
@@ -145,10 +150,11 @@ describe Ionian::Socket do
       shared_examples "initializer block" do
         specify do
           subject
-          sleep 0.1
+          
+          wait_until_client
           client.closed?.should eq false
           client.readpartial(0xFFFF).should eq data
-          sleep 0.1
+          
           subject.closed?.should eq true
         end
       end
@@ -176,10 +182,9 @@ describe Ionian::Socket do
       it "should terminate gracefully when the socket is closed" do
         subject.run_match
         
-        sleep 0.1
+        wait_until_client
         client.write "test\n"
         client.flush
-        sleep 0.1
         
         subject.close
       end
@@ -188,33 +193,29 @@ describe Ionian::Socket do
     
     describe "on_match" do
       let(:data) { "test on_match\n" }
+      let(:matches) { [] }
       
       it "returns a match only once when run_match thread is running" do
-        matches = []
         subject.on_match { matches << 1 }
         match_thread = subject.run_match
         
-        sleep 0.1 # Wait for the client socket to be accepted.
+        wait_until_client
         client.write data
         client.flush
-        sleep 0.1
         
+        Timeout.timeout(1) { Thread.pass until not matches.empty? }
         match_thread.kill
-        
         matches.count.should eq 1
       end
       
       it "returns a match only once when run_match thread is not running" do
-        matches = []
         subject.on_match { matches << 1 }
         
-        sleep 0.1 # Wait for the client socket to be accepted.
+        wait_until_client
         client.write data
         client.flush
-        sleep 0.1
         
-        match = subject.read_match
-        
+        Timeout.timeout(1) { match = subject.read_match }
         matches.count.should eq 1
       end
     end
