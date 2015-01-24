@@ -14,14 +14,13 @@ shared_examples "send and receive data" do
     
     connection.write data
     connection.flush
-    sleep 0.1
     
+    Thread.pass until client
     client.read_all.should eq data
     
     data = "more test data\n"
     client.write data
     client.flush
-    sleep 0.1
     
     connection.read_all.should eq data
   end
@@ -58,7 +57,7 @@ describe Ionian::Server do
   
   describe "accept listener registration" do
     
-    let(:remote_client) { TCPSocket.new 'localhost', kwargs[:port] }
+    let(:remote_client) { TCPSocket.new('localhost', kwargs[:port]) }
     
     it { should respond_to :on_accept }
     it { should respond_to :register_accept_listener }
@@ -71,7 +70,7 @@ describe Ionian::Server do
       
       # Create client connection.
       remote_client
-      sleep 0.1
+      Thread.pass until client
       
       # It returns an Ionian socket when a connection is accepted.
       client.should be_an Ionian::Socket
@@ -88,8 +87,8 @@ describe Ionian::Server do
       
       # Create client connection.
       remote_client
-      sleep 0.1
       
+      Thread.pass until client
       # It returns an Ionian socket when a connection is accepted.
       client.should be_an Ionian::Socket
       
@@ -110,8 +109,8 @@ describe Ionian::Server do
       
       # Create client connection.
       remote_client
-      sleep 0.1
       
+      Thread.pass until client
       client.should be_an Ionian::Socket
       
       remote_client.close
@@ -151,8 +150,9 @@ describe Ionian::Server do
       
       # Create client connections.
       num_connections.times do
+        old_client_count = clients.count
         sock = Ionian::Socket.new host: 'localhost', port: port, protocol: protocol
-        sleep 0.1
+        Thread.pass until old_client_count < clients.count
         sock.close
       end
       
@@ -173,7 +173,7 @@ describe Ionian::Server do
         socket.extend Ionian::Extension::IO
         socket.extend Ionian::Extension::Socket
         socket.reuse_addr = true
-        sleep 0.1 # Yield so server can accept connection.
+        Thread.pass until connections.count > 0
       end
     }
     
@@ -234,7 +234,7 @@ describe Ionian::Server do
       UNIXSocket.new(socket_file).tap do |socket|
         socket.extend Ionian::Extension::IO
         socket.extend Ionian::Extension::Socket
-        sleep 0.1 # Yield so server can accept connection.
+        Thread.pass until connections.count > 0
       end
     }
     
