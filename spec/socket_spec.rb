@@ -79,11 +79,12 @@ end
 describe Ionian::Socket do
   
   let(:kwargs) {{ host: 'localhost', port: port }}
+  let(:skip_after_block) { false }
   
   subject { Ionian::Socket.new **kwargs }
   
-  # TODO: Nest tests to get rid of $skip_after and "tcp listener socket" context.
-  after { subject.close if not $skip_after and subject.respond_to? :close and not subject.closed? }
+  # TODO: Nest tests to get rid of skip_after_block and "tcp listener socket" context.
+  after { subject.close if not skip_after_block and subject.respond_to? :close and not subject.closed? }
   
   
   describe "general" do
@@ -448,9 +449,9 @@ describe Ionian::Socket do
   
   describe "connection timeout" do
     let(:timeout) { 2 }
+    let(:skip_after_block) { true }
     
     specify do
-      $skip_after = true
       Timeout.timeout(timeout + 1) {
         expect { Ionian::Socket.new host: '192.168.254.253:51234', connect_timeout: timeout }
           .to raise_error Errno::EHOSTUNREACH
