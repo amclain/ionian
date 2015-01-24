@@ -31,7 +31,6 @@ describe Ionian::Extension::IO do
   
   it "can read matched data" do
     client.write "CS 1234 1\nCS 4567 0\n"
-    client.flush
     
     match = subject.read_match
     
@@ -45,7 +44,6 @@ describe Ionian::Extension::IO do
   
   it "attaches named captures as methods inside the block" do
     client.write "CS 1234 1\n"
-    client.flush
     
     received_matches = false
     
@@ -74,12 +72,12 @@ describe Ionian::Extension::IO do
     thread = subject.run_match
     
     client.write "CS 7890 1\n"
-    client.flush
     
-    sleep 0.1
-    thread.kill
+    Timeout.timeout(1) {
+      Thread.pass until block_run
+      thread.kill
+    }
     
-    Timeout.timeout(1) { thread.join }
     block_run.should eq true
   end
   
@@ -107,12 +105,12 @@ describe Ionian::Extension::IO do
     thread = subject.run_match
     
     client.write "CS 7890 1\nCS 2345 0\n"
-    client.flush
     
-    sleep 0.1
-    thread.kill
+    Timeout.timeout(1) {
+      Thread.pass until block_run
+      thread.kill
+    }
     
-    Timeout.timeout(1) { thread.join }
     block_run.should eq true
   end
   
@@ -122,8 +120,6 @@ describe Ionian::Extension::IO do
     subject
     
     client.write data
-    client.flush
-    sleep 0.1
     
     match = subject.read_match expression: expression
     match = match.first
@@ -139,11 +135,8 @@ describe Ionian::Extension::IO do
     subject.on_match { match_triggered = true }
     
     client.write data
-    client.flush
-    sleep 0.1
     
     match = subject.read_match
-    
     match_triggered.should eq true
   end
   
@@ -154,11 +147,9 @@ describe Ionian::Extension::IO do
     subject.on_match { match_triggered = true }
     
     client.write data
-    client.flush
-    sleep 0.1
     
-    subject.read_match notify: false
-    
+    match = subject.read_match notify: false
+    match.should_not be nil
     match_triggered.should eq false
   end
   
@@ -170,7 +161,6 @@ describe Ionian::Extension::IO do
     
     subject
     client.write data
-    client.flush
     
     result = subject.read_all
     
@@ -188,12 +178,6 @@ describe Ionian::Extension::IO do
     
     subject.expression = /(?<data>1+)(?<term>0)/
     client.write data
-    client.flush
-    
-    # The data needs time to propagate the network stack.
-    # If this is a small amount, not all the data gets
-    # there by the time the assertions run.
-    sleep 0.5
     
     match = []
     Timeout.timeout(5) { match = subject.read_match }
@@ -223,25 +207,21 @@ describe Ionian::Extension::IO do
     thread = subject.run_match
     
     begin
-      
       Timeout.timeout 10 do
+        client.no_delay = true
         
         # Feed data into the socket.
         repeat.times do
           client.write data
           client.flush
-          sleep 0.5
         end
         
         client.write terminator
         client.flush
-        sleep 0.1
-        
+        Thread.pass until found_match
       end
-      
-    rescue
+    ensure
       thread.kill # Make sure the run_match thread dies.
-      raise # Reraise timeout exception.
     end
     
     found_match.should eq true
@@ -270,7 +250,6 @@ describe Ionian::Extension::IO do
       result.should eq nil
       
       client.write data
-      client.flush
       
       # Receive avalable data.
       Timeout.timeout(1) { result = subject.read_all }
@@ -290,7 +269,6 @@ describe Ionian::Extension::IO do
       result.should eq nil
       
       client.write data
-      client.flush
       
       # Receive avalable data.
       Timeout.timeout(1) { result = subject.read_all nonblocking: true }
