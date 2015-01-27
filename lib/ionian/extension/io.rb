@@ -114,16 +114,23 @@ module Ionian
         exp           = Regexp.new "(.*?)#{exp}" if exp.is_a? String
         
         unless skip_select
-          return nil unless ::IO.select [self], nil, nil, timeout
+          return nil unless self.has_data? timeout: timeout
         end
-        
-        # Read data from the IO buffer until it's empty.
-        @ionian_buf << read_all
         
         @matches = []
         
+        # TODO: Implement an option for number of bytes or timeout to throw away
+        #       data if no match is found.
+        Timeout.timeout(timeout) do
+          loop do
+            # Read data from the IO buffer until it's empty.
+            @ionian_buf << read_all
+            break if @ionian_buf =~ exp
+          end
+        end
+        
         while @ionian_buf =~ exp
-          @matches << $~ # Match data.
+          @matches << $~   # Match data.
           @ionian_buf = $' # Leave post match data in the buffer.
         end
         
