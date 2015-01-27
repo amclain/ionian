@@ -19,6 +19,17 @@ module Ionian
     attr_reader :protocol
     alias_method :protocol?, :protocol
     
+    # @return [Ionian::Socket] a broadcast socket.
+    # 
+    # @option kwargs [Fixnum] :port Port to broadcast on.
+    # @option kwargs [String] :address ('255.255.255.255') Address to broadcast on.
+    # 
+    # @see #initialize Full list of socket options.
+    def self.create_broadcast_socket **kwargs
+      kwargs[:host] = kwargs.delete(:address) || '255.255.255.255'
+      kwargs[:broadcast] = true
+      new **kwargs
+    end
     
     # Creates a new socket or wraps an existing socket.
     # 

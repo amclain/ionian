@@ -426,14 +426,25 @@ describe Ionian::Socket do
     include_context "udp listener socket"
     let(:kwargs) {{ host: '255.255.255.255', port: port, broadcast: true }}
     
-    its(:protocol?)   { should eq :udp }
-    its(:persistent?) { should eq true }
-    its(:closed?)     { should eq false }
-    its(:multicast?)  { should eq false }
-    its(:broadcast?)  { should eq true }
-    its(:reuse_addr?) { should eq true }
+    shared_examples "a broadcast socket" do
+      its(:protocol?)   { should eq :udp }
+      its(:persistent?) { should eq true }
+      its(:closed?)     { should eq false }
+      its(:multicast?)  { should eq false }
+      its(:broadcast?)  { should eq true }
+      its(:reuse_addr?) { should eq true }
+    end
     
+    it_behaves_like "a broadcast socket"
     it_behaves_like "a persistent ionian socket"
+    
+    describe "create_broadcast_socket" do
+      subject { Ionian::Socket.create_broadcast_socket **kwargs }
+      let(:kwargs) {{ port: port }}
+      
+      it_behaves_like "a broadcast socket"
+      it_behaves_like "a persistent ionian socket"
+    end
   end
   
   
