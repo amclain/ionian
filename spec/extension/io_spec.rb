@@ -155,14 +155,20 @@ describe Ionian::Extension::IO do
   
   it "can read all of the data in the buffer" do
     repeat = 8192 # 100 killobytes.
+    terminator = '0'
     
     data = ''
     repeat.times { data += '1111111111111111' }
+    data << terminator
     
     subject
     client.write data
     
-    result = subject.read_all
+    result = ''
+    
+    Timeout.timeout(1) do
+      result += subject.read_all until result.end_with? terminator
+    end
     
     result.size.should eq data.size
     result.should eq data
@@ -188,9 +194,9 @@ describe Ionian::Extension::IO do
   end
   
   it "can match data that arrives in fragments" do
+    repeat = 3
     terminator = '0'
     data = '11111111'
-    repeat = 3
     
     subject.expression = /(?<data>1+)(?<term>0)/
     
