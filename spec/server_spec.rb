@@ -154,6 +154,7 @@ describe Ionian::Server do
         sock = Ionian::Socket.new host: 'localhost', port: port, protocol: protocol
         Thread.pass until old_client_count < clients.count
         sock.close
+        Thread.pass
       end
       
       server.close

@@ -328,7 +328,7 @@ describe Ionian::Socket do
       }
       
       listeners = proc{
-          socket_instance.call.instance_variable_get :@ionian_listeners
+          socket_instance.call.instance_variable_get :@ionian_match_handlers
       }
       
       # Send data, creating the socket instance with no listeners.

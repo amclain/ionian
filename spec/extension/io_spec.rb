@@ -277,4 +277,29 @@ describe Ionian::Extension::IO do
     
   end
   
+  
+  describe "on_error" do
+    
+    it "exception is accessible in block" do
+      block_run = false
+      
+      subject.on_error do |error, socket|
+        error.should be_a EOFError
+        block_run = true
+      end
+      
+      thread = subject.run_match
+      
+      client.close
+      
+      Timeout.timeout(1) {
+        Thread.pass until block_run
+        thread.kill
+      }
+      
+      block_run.should eq true
+    end
+    
+  end
+  
 end

@@ -21,12 +21,13 @@ module Ionian
       # Initialize the Ionian instance variables.
       # This is called automatically if #extend is called on an object.
       def initialize_ionian
-        @ionian_listeners     = []
-        @ionian_buf           = ''
-        @ionian_expression    = /(.*?)[\r\n]+/
-        @ionian_timeout       = nil
-        @ionian_skip_select   = false
-        @ionian_build_methods = true
+        @ionian_match_handlers = []
+        @ionian_error_handlers = []
+        @ionian_buf            = ''
+        @ionian_expression     = /(.*?)[\r\n]+/
+        @ionian_timeout        = nil
+        @ionian_skip_select    = false
+        @ionian_build_methods  = true
       end
       
       # @return [Boolean] True if there is data in the receive buffer.
@@ -94,7 +95,7 @@ module Ionian
       #   match for this single method call.
       # 
       # @option kwargs [Boolean] :notify (true) Set to false to skip notifying
-      #   match listener procs.
+      #   match handler procs.
       # 
       # @option kwargs [Boolean] :skip_select (false) Skip over the
       #   IO::select statement. Use if you are calling IO::select ahead of
@@ -142,27 +143,27 @@ module Ionian
         # Pass each match to block.
         @matches.each { |match| yield match } if block_given?
         
-        # Notify on_match listeners unless the #run_match thread is active.
-        @matches.each { |match| notify_listeners match } \
-          if notify and not @match_listener
+        # Notify on_match handlers unless the #run_match thread is active.
+        @matches.each { |match| notify_match_handlers match } \
+          if notify and not @run_match_thread
         
         @matches
       end
      
-      # Start a thread that checks for data and notifies listeners (do |match, socket|).
+      # Start a thread that checks for data and notifies match and error handlers.
       # Passes kwargs to {#read_match}.
       # This method SHOULD NOT be used if {#read_match} is used.
       def run_match **kwargs
-        @match_listener ||= Thread.new do
+        @run_match_thread ||= Thread.new do
           begin
             while not closed? do
               matches = read_match **kwargs
-              matches.each { |match| notify_listeners match } if matches
+              matches.each { |match| notify_match_handlers match } if matches
             end
-          rescue EOFError
-          rescue IOError
+          rescue Exception => e
+            notify_error_handlers e
           ensure
-            @match_listener = nil
+            @run_match_thread = nil
           end
         end
       end
@@ -177,23 +178,51 @@ module Ionian
       
       # Register a block to be called when {#run_match} receives matched data.
       # Method callbacks can be registered with &object.method(:method).
-      # Returns a reference to the given block.
+      # @return [Block] a reference to the given block.
+      # @yield [MatchData, self] Regex match.
       # 
       # @example
-      #   registered_block = ionian_socket.register_observer { |match| ... }
+      #   registered_block = ionian_socket.register_match_handler { |match| ... }
       # 
       # @example
-      #   registered_block = ionian_socket.register_observer &my_object.method(:foo)
-      def register_observer &block
-        @ionian_listeners << block unless @ionian_listeners.include? block
+      #   registered_block = ionian_socket.register_match_handler &my_object.method(:foo)
+      def register_match_handler &block
+        @ionian_match_handlers << block unless @ionian_match_handlers.include? block
         block
       end
       
-      alias_method :on_match, :register_observer
+      alias_method :on_match, :register_match_handler
+      
+      # @deprecated Use {#register_match_handler} instead.
+      def register_observer &block
+        register_match_handler &block
+      end
       
       # Unregister a block from being called when matched data is received.
+      def unregister_match_handler &block
+        @ionian_match_handlers.delete_if { |o| o == block }
+        block
+      end
+      
+      # @deprecated Use {#unregister_match_handler} instead.
       def unregister_observer &block
-        @ionian_listeners.delete_if { |o| o == block }
+        unregister_match_handler &block
+      end
+      
+      # Register a block to be called when {#run_match} raises an error.
+      # Method callbacks can be registered with &object.method(:method).
+      # @return [Block] a reference to the given block.
+      # @yield [Exception, self]
+      def register_error_handler &block
+        @ionian_error_handlers << block unless @ionian_error_handlers.include? block
+        block
+      end
+      
+      alias_method :on_error, :register_error_handler
+      
+      # Unregister a block from being called when a {#run_match} error is raised.
+      def unregister_error_handler &block
+        @ionian_error_handlers.delete_if { |o| o == block }
         block
       end
       
@@ -202,8 +231,14 @@ module Ionian
       
       # Send match to each of the registered observers. Includes self
       # as the second block parameter.
-      def notify_listeners match
-        @ionian_listeners.each { |listener| listener.call match, self }
+      def notify_match_handlers match
+        @ionian_match_handlers.each { |handler| handler.call match, self }
+      end
+      
+      # Send exception to each of the registered observers. Includes self
+      # as the second block parameter.
+      def notify_error_handlers exception
+        @ionian_error_handlers.each { |handler| handler.call exception, self }
       end
     
     end
