@@ -55,13 +55,11 @@ module Ionian
       # immediately and try to deliver any data in the send buffer if value
       # is true.
       # 
-      # Args:
-      #   Time: Time in seconds to remain open before discarding data and
-      #         sending a RST packet.
+      # @param time [Fixnum] Time in seconds to remain open before discarding
+      #   data and sending a RST packet.
+      # 
       # ( SO_LINGER )
       def linger= enable, time: 60
-        # TODO: Passing a kwarg doesn't work here because of the
-        #       assignment operator. Causes parser error.
         param = (!!enable && enable != 0) ? 1 : 0
         self.setsockopt ::Socket::SOL_SOCKET, ::Socket::SO_LINGER, [param, time.to_i].pack('ii')
       end
