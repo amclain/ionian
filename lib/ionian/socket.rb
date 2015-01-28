@@ -87,7 +87,8 @@ module Ionian
     def initialize existing_socket = nil, **kwargs, &block
       @socket = existing_socket
       
-      @ionian_listeners = []
+      @ionian_match_handlers = []
+      @ionian_error_handlers = []
       
       @expression = kwargs.fetch :expression, nil
       
@@ -205,29 +206,60 @@ module Ionian
     
     # Register a block to be called when #run_match receives matched data.
     # Method callbacks can be registered with &object.method(:method).
-    # Returns a reference to the given block.
-    # block = ionian_socket.register_observer { ... }
-    def register_observer &block
-      @ionian_listeners << block unless @ionian_listeners.include? block
-      @socket.register_observer &block if @socket
+    # @return [Block] The given block.
+    # block = ionian_socket.register_match_handler { ... }
+    def register_match_handler &block
+      @ionian_match_handlers << block unless @ionian_match_handlers.include? block
+      @socket.register_match_handler &block if @socket
       block
     end
     
-    alias_method :on_match, :register_observer
+    alias_method :on_match, :register_match_handler
+    
+    # @deprecated Use {#register_match_handler} instead.
+    def register_observer &block
+      STDOUT.puts "WARN: Call to deprecated method #{__method__}"
+      register_match_handler &block
+    end
     
     # Unregister a block from being called when matched data is received.
+    def unregister_match_handler &block
+      @ionian_match_handlers.delete_if { |o| o == block }
+      @socket.unregister_match_handler &block if @socket
+      block
+    end
+    
+    # @deprecated Use {#unregister_match_handler} instead.
     def unregister_observer &block
-      @ionian_listeners.delete_if { |o| o == block }
-      @socket.unregister_observer &block if @socket
+      STDOUT.puts "WARN: Call to deprecated method #{__method__}"
+      unregister_match_handler &block
+    end
+    
+    # Register a block to be called when {Ionian::IO#run_match} raises an error.
+    # Method callbacks can be registered with &object.method(:method).
+    # @return [Block] a reference to the given block.
+    # @yield [Exception, self]
+    def register_error_handler &block
+      @ionian_error_handlers << block unless @ionian_error_handlers.include? block
+      @socket.register_error_handler &block if @socket
+      block
+    end
+    
+    alias_method :on_error, :register_error_handler
+    
+    # Unregister a block from being called when a {Ionian::IO#run_match} error
+    # is raised.
+    def unregister_error_handler &block
+      @ionian_error_handlers.delete_if { |o| o == block }
+      @socket.unregister_error_handler &block if @socket
       block
     end
     
     ### Methods Forwarded To @socket ###
     
-    # Returns true if there is data in the receive buffer.
-    # Args:
-    #   Timeout: Number of seconds to wait for data until
-    #     giving up. Set to nil for blocking.
+    # @return [Boolean] True if there is data in the receive buffer.
+    # @option kwargs [Fixnum, nil] :timeout (0) Number of seconds to wait for
+    # data until giving up. Set to nil for blocking.
     def has_data? **kwargs
       return false unless @socket
       @socket.has_data? kwargs
@@ -251,8 +283,8 @@ module Ionian
       self.write string.map{ |s| s.chomp }.join("\n") + "\n"
     end
     
-    # Writes the given string to the socket. Returns the number of
-    # bytes written.
+    # Writes the given string to the socket.
+    # @return [Fixnum] Number of bytes written.
     def write string
       create_socket unless @persistent
       
@@ -328,8 +360,9 @@ module Ionian
           
           @socket.expression = @expression if @expression
           
-          # Register listeners.
-          @ionian_listeners.each { |proc| @socket.on_match &proc }
+          # Register handlers.
+          @ionian_match_handlers.each { |proc| @socket.on_match &proc }
+          @ionian_error_handlers.each { |proc| @socket.on_error &proc }
           
           initialize_socket_methods
         end

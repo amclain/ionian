@@ -39,7 +39,7 @@ module Ionian
         ::IO.select([self], nil, nil, timeout) ? true : false
       end
       
-      # Returns the regular expression used for {#read_match}.
+      # @return [Regexp] Regular expression used for {#read_match}.
       def expression
         @ionian_expression
       end
@@ -84,8 +84,8 @@ module Ionian
       # @yieldparam match [MatchData] If there are multiple matches, the block
       #   is called multiple times.
       # 
-      # @return [Array<MatchData>, nil] Returns an array of matches.
-      #   Returns nil if no data was received within the timeout period.
+      # @return [Array<MatchData>, nil] matches.
+      #   Nil if no data was received within the timeout period.
       # 
       # 
       # @option kwargs [Numeric] :timeout (nil) Timeout in seconds IO::select
@@ -202,6 +202,7 @@ module Ionian
       
       # @deprecated Use {#register_match_handler} instead.
       def register_observer &block
+        STDOUT.puts "WARN: Call to deprecated method #{__method__}"
         register_match_handler &block
       end
       
@@ -213,6 +214,7 @@ module Ionian
       
       # @deprecated Use {#unregister_match_handler} instead.
       def unregister_observer &block
+        STDOUT.puts "WARN: Call to deprecated method #{__method__}"
         unregister_match_handler &block
       end
       
