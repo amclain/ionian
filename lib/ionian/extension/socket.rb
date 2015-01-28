@@ -229,49 +229,51 @@ module Ionian
       
       # Not yet implemented.
       def ipv6_add_membership
-        # TODO: Implement
-        false
+        # TODO: Implement IPv6
+        raise NotImplementedError
       end
       
       # Not yet implemented.
       def ipv6_drop_membership
-        # TODO: Implement
-        false
+        # TODO: Implement IPv6
+        raise NotImplementedError
       end
       
       # Not yet implemented.
       def ipv6_multicast_if
-        # TODO: Implement
-        false
+        # TODO: Implement IPv6
+        raise NotImplementedError
       end
       
       # Not yet implemented.
       def ipv6_multicast_if= value
-        # TODO: Implement
+        # TODO: Implement IPv6
       end
       
       # Not yet implemented.
       def ipv6_multicast_hops
-        # TODO: Implement
-        false
+        # TODO: Implement IPv6
+        raise NotImplementedError
       end
       
       # Not yet implemented.
       def ipv6_multicast_hops= value
-        # TODO: Implement
+        # TODO: Implement IPv6
+        raise NotImplementedError
       end
       
       # Not yet implemented.
       def ipv6_multicast_loop
-        # TODO: Implement
-        false
+        # TODO: Implement IPv6
+        raise NotImplementedError
       end
       
       alias_method :ipv6_multicast_loop?, :ipv6_multicast_loop
       
       # Not yet implemented.
       def ipv6_multicast_loop= value
-        # TODO: Implement
+        # TODO: Implement IPv6
+        raise NotImplementedError
       end
       
       
