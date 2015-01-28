@@ -19,19 +19,14 @@ shared_context "listener socket" do
   let!(:server_thread) {
     server
     Thread.new do
-      loop do
-        begin
-          break if server.closed?
+      begin
+        while not server.closed?
           new_request = ::IO.select [server], nil, nil
           
-          Thread.exclusive do
+          Thread.exclusive { clients << server.accept.extend(Ionian::Extension::Socket) } \
             if new_request
-              clients << server.accept.extend(Ionian::Extension::Socket)
-            end
-          end
-        rescue Exception
-          break
         end
+      rescue IOError # closed
       end
     end
   }
