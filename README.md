@@ -16,6 +16,19 @@ A Ruby library to simplify interaction with IO streams. This includes network so
 	gem install ionian
 
 
+## Issues, Bugs, Feature Requests
+
+Any bugs and feature requests should be reported on the GitHub issue tracker:
+
+https://github.com/amclain/ionian/issues
+
+
+**Pull requests are preferred via GitHub.**
+
+Mercurial users can use [Hg-Git](http://hg-git.github.io/) to interact with
+GitHub repositories.
+
+
 ## Code Examples
 
 ### Creating A Socket
