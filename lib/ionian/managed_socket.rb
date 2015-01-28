@@ -17,7 +17,33 @@ module Ionian
       @auto_reconnect = kwargs.delete(:auto_reconnect) || false
       
       @socket = Ionian::Socket.new **kwargs
+      
+      @socket.on_error { |e|
+        if auto_reconnect
+          @socket.close unless @socket.closed?
+          @socket = Ionian::Socket.new **kwargs
+        else
+          raise e unless e.is_a? EOFError or e.is_a? IOError
+        end
+      }
+      
+      @socket.run_match.run
+      Thread.pass; Thread.pass until @socket.run_match_is_running?
+      sleep 0.1 # TODO: Remove. Needed for Errno::ECONNRESET problem.
     end
+    
+    def close
+      @auto_reconnect = false
+      @socket.close
+    end
+    
+    # TODO: Intercept
+    # def on_match &block
+    # end
+    
+    # TODO: Intercept
+    # def on_error &block
+    # end
     
     def method_missing meth, *args, &block
       @socket.__send__ meth, *args, &block

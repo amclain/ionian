@@ -162,6 +162,7 @@ module Ionian
       # This method SHOULD NOT be used if {#read_match} is used.
       def run_match **kwargs
         @run_match_thread ||= Thread.new do
+          Thread.current.thread_variable_set :match_thread_running, true
           begin
             while not closed? do
               matches = read_match **kwargs
@@ -173,6 +174,14 @@ module Ionian
             @run_match_thread = nil
           end
         end
+      end
+      
+      def run_match_is_running?
+        return true if \
+          @run_match_thread and
+          @run_match_thread.thread_variable_get(:match_thread_running)
+        
+        false
       end
       
       # Erase the data in the IO and Ionian buffers.
