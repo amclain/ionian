@@ -1,6 +1,7 @@
 require 'ionian/extension/io'
 require 'ionian/extension/socket'
 require 'ionian/socket'
+require 'ionian/managed_socket'
 require 'ionian/server'
 
 # A library to simplify interaction with IO streams.
