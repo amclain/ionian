@@ -20,15 +20,18 @@ describe Ionian::ManagedSocket do
   
   describe do
     include_context "tcp listener socket"
+    
+    before { subject; wait_until_client }
+    
     include_examples "ionian interface"
     include_examples "socket extension interface"
     
     describe "automatic reconnect" do
       let(:kwargs) {{ host: host, port: port, auto_reconnect: true, connect_timeout: 1 }}
       
-      # TODO: Raises exception:
-      #   Connection refused - connect(2) for "localhost" port 5050 (Errno::ECONNREFUSED)
-      # its(:auto_reconnect) { should eq true }
+      after  { subject.close }
+      
+      its(:auto_reconnect) { should eq true }
       
       xspecify do
         clients.count.should eq 0

@@ -10,7 +10,8 @@ module Ionian
     attr_reader :auto_reconnect
     
     # @option kwargs [Boolean] :auto_reconnect (false) Automatically reconnect
-    #   if the socket closes.
+    #   if the socket closes. Must call {#close} to break the auto-reconnect
+    #   loop.
     # 
     # @see Ionian::Socket#initialize More optional parameters.
     def initialize **kwargs
@@ -27,14 +28,12 @@ module Ionian
         end
       }
       
-      @socket.run_match.run
-      Thread.pass; Thread.pass until @socket.run_match_is_running?
-      sleep 0.1 # TODO: Remove. Needed for Errno::ECONNRESET problem.
+      @socket.run_match
     end
     
     def close
       @auto_reconnect = false
-      @socket.close
+      @socket.close unless @socket.closed?
     end
     
     # TODO: Intercept

@@ -3,7 +3,7 @@ require 'socket'
 require 'timeout'
 
 # Convenience method for waiting until a condition is true, with a timeout.
-def wait_until(timeout: 1)
+def wait_until timeout: 1
   Timeout.timeout(timeout) { Thread.pass; Thread.pass until Thread.exclusive { yield } }
 end
 
@@ -14,9 +14,9 @@ shared_context "listener socket" do
     clients.last
   end
   
-  let (:clients) { [] }
+  let(:clients) { [] }
   
-  let! (:server_thread) {
+  let!(:server_thread) {
     server
     Thread.new do
       loop do
@@ -76,7 +76,6 @@ shared_context "udp listener socket" do
       s.bind Socket::INADDR_ANY, port
     end
   }
-  
 end
 
 
@@ -94,5 +93,4 @@ shared_context "ionian subject" do |extension|
   subject { ionian_socket }
   
   after { ionian_socket.close unless ionian_socket.closed? }
-  
 end

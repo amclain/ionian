@@ -1,3 +1,4 @@
+require 'timeout'
 require 'ionian/extension/socket'
 
 module Ionian
