@@ -34,22 +34,22 @@ describe Ionian::ManagedSocket do
       its(:auto_reconnect) { should eq true }
       
       xspecify do
-        clients.count.should eq 0
-        
         exceptions = []
         subject.on_error { |e| exceptions << e }
-        Timeout.timeout(1) { Thread.pass until clients.count == 1 }
         
-        client.close
-        Timeout.timeout(1) { Thread.pass until clients.count == 2 }
+        (1..4).each do |i|
+          clients.count.should eq i
+          # exceptions.count.should eq i - 1
+          
+          client.close
+          Timeout.timeout(1) { Thread.pass until clients.count == i + 1 }
+          
+          clients.count.should eq i + 1
+          # exceptions.count.should eq i
+        end
         
-        client.close
-        
-        # TODO: Remove ---------------------------------------------------------
         p clients
-        p.exceptions
-        
-        Timeout.timeout(1) { Thread.pass until clients.count == 3 }
+        p exceptions
       end
     end
     

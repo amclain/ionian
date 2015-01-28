@@ -16,19 +16,8 @@ module Ionian
     # @see Ionian::Socket#initialize More optional parameters.
     def initialize **kwargs
       @auto_reconnect = kwargs.delete(:auto_reconnect) || false
-      
-      @socket = Ionian::Socket.new **kwargs
-      
-      @socket.on_error { |e|
-        if auto_reconnect
-          @socket.close unless @socket.closed?
-          @socket = Ionian::Socket.new **kwargs
-        else
-          raise e unless e.is_a? EOFError or e.is_a? IOError
-        end
-      }
-      
-      @socket.run_match
+      @kwargs = kwargs
+      create_socket
     end
     
     def close
@@ -50,6 +39,24 @@ module Ionian
     
     def respond_to_missing? meth, *args
       @socket.respond_to? meth, *args
+    end
+    
+    
+    private
+    
+    def create_socket
+      @socket = Ionian::Socket.new **@kwargs
+      @socket.on_error &method(:socket_error_handler)
+      @socket.run_match
+    end
+    
+    def socket_error_handler e, socket
+      if auto_reconnect
+        @socket.close unless @socket.closed?
+        create_socket
+      else
+        raise e unless e.is_a? EOFError or e.is_a? IOError
+      end
     end
     
   end
