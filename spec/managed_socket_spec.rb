@@ -33,23 +33,28 @@ describe Ionian::ManagedSocket do
       
       its(:auto_reconnect) { should eq true }
       
-      xspecify do
+      it "binds match and error handlers to reconnected sockets" do
+        matches = []
+        subject.on_match { |m| matches << m }
+        
         exceptions = []
         subject.on_error { |e| exceptions << e }
         
         (1..4).each do |i|
           clients.count.should eq i
-          # exceptions.count.should eq i - 1
+          matches.count.should eq i - 1
+          exceptions.count.should eq i - 1
+          
+          client.write "test\n"
+          Timeout.timeout(1) { Thread.pass until matches.count == i }
           
           client.close
-          Timeout.timeout(1) { Thread.pass until clients.count == i + 1 }
           
-          clients.count.should eq i + 1
-          # exceptions.count.should eq i
+          Timeout.timeout(1) {
+            Thread.pass until exceptions.count == i
+            Thread.pass until clients.count == i + 1
+          }
         end
-        
-        p clients
-        p exceptions
       end
     end
     

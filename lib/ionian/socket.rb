@@ -205,10 +205,11 @@ module Ionian
       matches
     end
     
-    # Register a block to be called when #run_match receives matched data.
+    # Register a block to be called when {Ionian::Extension::IO#run_match}
+    # receives matched data.
     # Method callbacks can be registered with &object.method(:method).
     # @return [Block] The given block.
-    # block = ionian_socket.register_match_handler { ... }
+    # @yield [MatchData, self]
     def register_match_handler &block
       @ionian_match_handlers << block unless @ionian_match_handlers.include? block
       @socket.register_match_handler &block if @socket
@@ -236,7 +237,8 @@ module Ionian
       unregister_match_handler &block
     end
     
-    # Register a block to be called when {Ionian::IO#run_match} raises an error.
+    # Register a block to be called when {Ionian::Extension::IO#run_match}
+    # raises an error.
     # Method callbacks can be registered with &object.method(:method).
     # @return [Block] a reference to the given block.
     # @yield [Exception, self]
