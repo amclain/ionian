@@ -55,7 +55,7 @@ end
 
 shared_context "unix listener socket" do
   let (:socket_file) { '/tmp/ionian.test.sock' }
-  let (:server)      { 
+  let (:server)  { 
     File.delete socket_file if File.exists? socket_file
     UNIXServer.new socket_file
   }

@@ -21,8 +21,14 @@ module Ionian
       @match_handlers = []
       @error_handlers = []
       
-      create_socket
+      # run_match
     end
+    
+    # --------------------------------------------------------------------------
+    # TODO: Significantly simplify the ManagedSocket interface.
+    #       Create a reactor loop that handles writing data and
+    #       automatic reconnect.
+    # --------------------------------------------------------------------------
     
     # Close the socket.
     # Disables :auto_reconnect.
@@ -30,6 +36,31 @@ module Ionian
       @auto_reconnect = false
       @socket.close unless @socket.closed?
     end
+    
+    # Start the event loop.
+    # Should be called after the handlers are registered.
+    def run
+    end
+    
+    # Write data to the socket.
+    def write data
+    end
+    
+    # def run_match
+    #   @run_match_thread ||= Thread.new do
+    #     Thread.current.thread_variable_set :match_thread_running, true
+    #     while not closed? do
+    #       begin
+    #         matches = read_match **kwargs
+    #         matches.each { |match| notify_match_handlers match } if matches
+    #       rescue Exception => e
+    #         notify_error_handlers e
+    #       ensure
+    #         @run_match_thread = nil
+    #       end
+    #     end
+    #   end
+    # end
     
     # Register a block to be called when {Ionian::Extension::IO#run_match}
     # receives matched data.
@@ -75,7 +106,8 @@ module Ionian
     # Pass unhandled methods to @socket.
     # @see Ionian::Socket
     def method_missing meth, *args, &block
-      @socket.__send__ meth, *args, &block
+      create_socket unless @socket and not @socket.closed?
+      @socket.__send__ meth, *args, &block if @socket
     end
     
     def respond_to_missing? meth, *args
@@ -87,22 +119,40 @@ module Ionian
     
     # Initialize or reinitialize @socket.
     def create_socket
-      @socket = Ionian::Socket.new **@kwargs
-      @socket.on_error &method(:socket_error_handler)
-      @match_handlers.each { |h| @socket.register_match_handler &h }
-      @error_handlers.each { |h| @socket.register_error_handler &h }
-      
-      @socket.run_match
+      begin
+        @socket = Ionian::Socket.new **@kwargs
+        
+        @socket.on_error &method(:socket_error_handler)
+        @match_handlers.each { |h| @socket.register_match_handler &h }
+        @error_handlers.each { |h| @socket.register_error_handler &h }
+        
+        @socket.run_match
+      rescue Errno::ECONNREFUSED, SystemCallError => e
+        if auto_reconnect
+          sleep @kwargs.fetch :connect_timeout, 10
+          retry
+        else
+          raise e
+        end
+      end
     end
     
     # {Ionian::Socket#on_error} handler for @socket.
     def socket_error_handler e, socket
       if auto_reconnect
-        @socket.close unless @socket.closed?
+        @socket.close if @socket and not @socket.closed?
         create_socket
       else
         raise e unless e.is_a? EOFError or e.is_a? IOError
       end
+    end
+    
+    def notify_match_handlers match
+      @match_handlers.each { |h| h.call match, self }
+    end
+    
+    def notify_error_handlers exception
+      @error_handlers.each { |h| h.call exception, self }
     end
     
   end
