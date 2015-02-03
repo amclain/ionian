@@ -43,7 +43,11 @@ end
 
 shared_context "tcp listener socket" do
   let (:port)   { 5050 }
-  let (:server) { TCPServer.new port }
+  let (:server) {
+    TCPServer.new(port).tap { |s|
+      s.setsockopt ::Socket::SOL_SOCKET, ::Socket::SO_REUSEADDR, [1].pack('i')
+    }
+  }
   
   include_context "listener socket"
 end
