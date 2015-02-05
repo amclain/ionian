@@ -1,6 +1,8 @@
 require 'pry'
 require 'rspec/its'
+require 'coveralls'
 
+Coveralls.wear!
 
 Thread.abort_on_exception = true
 
