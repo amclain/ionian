@@ -221,6 +221,28 @@ describe Ionian::Socket do
     end
     
     
+    describe "cmd" do
+      let(:ping) { "ping\n" }
+      let(:pong) { "pong\n" }
+      
+      specify do
+        thread = Thread.new do
+          Thread.pass until client
+          client.readpartial(0xFFFF).should eq ping
+          client.write pong
+        end
+        
+        Timeout.timeout(1) {
+          subject.cmd(ping).first.tap do |match_data|
+            match_data.should be_a MatchData
+            match_data.to_s.should eq pong
+          end
+        }
+        
+        thread.kill
+      end
+    end
+    
   end # "tcp listener socket" describe
   
   
