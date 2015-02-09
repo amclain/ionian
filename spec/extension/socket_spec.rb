@@ -63,6 +63,14 @@ describe Ionian::Extension::Socket do
   describe "with UDP socket" do
     subject { UDPSocket.new.extend Ionian::Extension::Socket }
     
+    it "can add/drop multicast membership" do
+      subject.bind '127.0.0.1', 5000
+      subject.connect '224.0.0.5', 5000
+      subject.ip_add_membership
+      subject.ip_drop_membership
+      subject.close
+    end
+    
     it "provides accessors for ip_multicast_if" do
       subject.ip_multicast_if = '127.0.0.1'
       subject.ip_multicast_if.should eq '127.0.0.1'
