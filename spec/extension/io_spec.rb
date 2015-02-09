@@ -308,7 +308,7 @@ describe Ionian::Extension::IO do
   end
   
   
-  describe "deprecated method",iso:true do
+  describe "deprecated method" do
     shared_examples "is deprecated" do
       specify do
         STDOUT.should_receive(:puts) { |str| str.downcase.should include "deprecated" }
