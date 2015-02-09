@@ -2,8 +2,7 @@ require 'ionian/socket'
 
 module Ionian
   
-  # A socket manager that wraps an {Ionian::Socket} and can perform functions
-  # like heartbeating and auto-reconnect.
+  # A socket manager that performs functions like heartbeating and auto-reconnect.
   class ManagedSocket
     
     # When true, automatically reconnect if the socket closes.
@@ -21,7 +20,8 @@ module Ionian
       @match_handlers = []
       @error_handlers = []
       
-      # run_match
+      @write_queue = Queue.new
+      @write_pipe_rx, @write_pipe_tx = IO.pipe
     end
     
     # --------------------------------------------------------------------------
@@ -35,32 +35,24 @@ module Ionian
     def close
       @auto_reconnect = false
       @socket.close unless @socket.closed?
+      @write_pipe_tx.close
+      @write_pipe_rx.close
+      @write_queue = nil
     end
     
     # Start the event loop.
     # Should be called after the handlers are registered.
     def run
+      @run_thread = Thread.new do
+        
+      end
     end
     
     # Write data to the socket.
     def write data
+      @write_queue << data
+      @write_pipe_tx.write "\n"
     end
-    
-    # def run_match
-    #   @run_match_thread ||= Thread.new do
-    #     Thread.current.thread_variable_set :match_thread_running, true
-    #     while not closed? do
-    #       begin
-    #         matches = read_match **kwargs
-    #         matches.each { |match| notify_match_handlers match } if matches
-    #       rescue Exception => e
-    #         notify_error_handlers e
-    #       ensure
-    #         @run_match_thread = nil
-    #       end
-    #     end
-    #   end
-    # end
     
     # Register a block to be called when {Ionian::Extension::IO#run_match}
     # receives matched data.
@@ -101,17 +93,6 @@ module Ionian
       @error_handlers.delete_if { |o| o == block }
       @socket.unregister_error_handler &block if @socket
       block
-    end
-    
-    # Pass unhandled methods to @socket.
-    # @see Ionian::Socket
-    def method_missing meth, *args, &block
-      create_socket unless @socket and not @socket.closed?
-      @socket.__send__ meth, *args, &block if @socket
-    end
-    
-    def respond_to_missing? meth, *args
-      @socket.respond_to? meth, *args
     end
     
     
