@@ -211,7 +211,7 @@ module Ionian
       
       # @deprecated Use {#register_match_handler} instead.
       def register_observer &block
-        STDOUT.puts "WARN: Call to deprecated method #{__method__}"
+        STDOUT.puts "WARNING: Call to deprecated method: #{__method__}"
         register_match_handler &block
       end
       
@@ -223,7 +223,7 @@ module Ionian
       
       # @deprecated Use {#unregister_match_handler} instead.
       def unregister_observer &block
-        STDOUT.puts "WARN: Call to deprecated method #{__method__}"
+        STDOUT.puts "WARNING: Call to deprecated method: #{__method__}"
         unregister_match_handler &block
       end
       

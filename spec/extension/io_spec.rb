@@ -242,9 +242,9 @@ describe Ionian::Extension::IO do
   
   
   describe "read_all" do
+    let(:data) { "CS 1234 65535\n" }
     
     it "has blocking mode" do
-      data = "CS 1234 65535\n"
       result = nil
       
       # Block if no data.
@@ -263,7 +263,6 @@ describe Ionian::Extension::IO do
     end
     
     it "has nonblocking mode" do
-      data = "CS 1234 65535\n"
       result = 'error' # Junk data. Nonblocking should return nil if no data.
       
       # Block if no data.
@@ -306,6 +305,29 @@ describe Ionian::Extension::IO do
       block_run.should eq true
     end
     
+  end
+  
+  
+  describe "deprecated method",iso:true do
+    shared_examples "is deprecated" do
+      specify do
+        STDOUT.should_receive(:puts) { |str| str.downcase.should include "deprecated" }
+        subject.should_receive(forwarded_method)
+        subject.__send__ deprecated_method
+      end
+    end
+    
+    describe "register_observer" do
+      let(:deprecated_method) { :register_observer }
+      let(:forwarded_method)  { :register_match_handler }
+      include_examples "is deprecated"
+    end
+    
+    describe "unregister_observer" do
+      let(:deprecated_method) { :unregister_observer }
+      let(:forwarded_method)  { :unregister_match_handler }
+      include_examples "is deprecated"
+    end
   end
   
 end
