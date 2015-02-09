@@ -88,4 +88,31 @@ describe Ionian::Extension::Socket do
     end
   end
   
+  describe "IPv6" do
+    
+    specify "ipv6_add_membership" do
+      expect { subject.ipv6_add_membership }.to raise_error NotImplementedError
+    end
+    
+    specify "ipv6_drop_membership" do
+      expect { subject.ipv6_drop_membership }.to raise_error NotImplementedError
+    end
+    
+    specify "ipv6_multicast_if" do
+      expect { subject.ipv6_multicast_if }.to raise_error NotImplementedError
+      expect { subject.ipv6_multicast_if = nil }.to raise_error NotImplementedError
+    end
+    
+    specify "ipv6_multicast_hops" do
+      expect { subject.ipv6_multicast_hops }.to raise_error NotImplementedError
+      expect { subject.ipv6_multicast_hops = nil }.to raise_error NotImplementedError
+    end
+    
+    specify "ipv6_multicast_loop" do
+      expect { subject.ipv6_multicast_loop }.to raise_error NotImplementedError
+      expect { subject.ipv6_multicast_loop = nil }.to raise_error NotImplementedError
+    end
+    
+  end
+  
 end

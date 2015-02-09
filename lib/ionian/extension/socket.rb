@@ -248,6 +248,7 @@ module Ionian
       # Not yet implemented.
       def ipv6_multicast_if= value
         # TODO: Implement IPv6
+        raise NotImplementedError
       end
       
       # Not yet implemented.
