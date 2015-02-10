@@ -15,6 +15,7 @@ module Ionian
     # @see Ionian::Socket#initialize More optional parameters.
     def initialize **kwargs
       @auto_reconnect = kwargs.delete(:auto_reconnect) || false
+      raise NotImplementedError, ':auto_reconnect must be set true.' unless @auto_reconnect
       @kwargs = kwargs
       
       @match_handlers = []
@@ -34,7 +35,7 @@ module Ionian
     # Disables :auto_reconnect.
     def close
       @auto_reconnect = false
-      @socket.close unless @socket.closed?
+      @socket.close if @socket and not @socket.closed?
       @write_pipe_tx.close
       @write_pipe_rx.close
       @write_queue = nil
@@ -43,8 +44,9 @@ module Ionian
     # Start the event loop.
     # Should be called after the handlers are registered.
     def run
-      @run_thread = Thread.new do
-        
+      create_socket unless @run_thread
+      @run_thread ||= Thread.new do
+        # p ::IO.select [@write_pipe_rx], nil, nil, nil
       end
     end
     
@@ -80,6 +82,8 @@ module Ionian
     # @return [Block] a reference to the given block.
     # @yield [Exception, self]
     def register_error_handler &block
+      raise NotImplementedError
+      
       @error_handlers << block unless @error_handlers.include? block
       @socket.register_error_handler &block if @socket
       block
@@ -90,6 +94,8 @@ module Ionian
     # Unregister a block from being called when a {Ionian::IO#run_match} error
     # is raised.
     def unregister_error_handler &block
+      raise NotImplementedError
+      
       @error_handlers.delete_if { |o| o == block }
       @socket.unregister_error_handler &block if @socket
       block

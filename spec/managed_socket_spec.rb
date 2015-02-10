@@ -1,24 +1,23 @@
 require 'ionian/managed_socket'
 
-require 'listener_socket_context'
-require 'extension/ionian_interface'
-require 'extension/socket_extension_interface'
+require_relative 'listener_socket_context'
+require_relative 'extension/ionian_interface'
+require_relative 'extension/socket_extension_interface'
 
-describe Ionian::ManagedSocket do
-  
+describe Ionian::ManagedSocket,iso:true do
   subject { Ionian::ManagedSocket.new **kwargs }
-  let(:kwargs) {{ host: host, port: port }}
-  let(:host)   { 'localhost' }
+  let(:kwargs) {{ host: host, port: port, auto_reconnect: auto_reconnect }}
+  let(:host) { 'localhost' }
+  let(:port) { 5050 }
+  let(:auto_reconnect) { true }
   
   
   def wait_until_client
-    Thread.pass until client
+    Timeout.timeout(5) { Thread.pass until client }
   end
   
   
   describe "interface" do
-    let(:port) { 5050 }
-    
     it { should respond_to :register_match_handler }
     it { should respond_to :on_match }
     it { should respond_to :write }
@@ -30,10 +29,13 @@ describe Ionian::ManagedSocket do
   describe do
     include_context "tcp listener socket"
     let(:create_subject) { true }
+    let(:matches) { [] }
     
     before {
       if create_subject
-        subject; wait_until_client
+        subject.on_match { |match| matches << match }
+        subject.run
+        wait_until_client
       end
     }
     
@@ -42,7 +44,7 @@ describe Ionian::ManagedSocket do
     describe "automatic reconnect" do
       let(:kwargs) {{ host: host, port: port, auto_reconnect: true, connect_timeout: 1 }}
       
-      # its(:auto_reconnect) { should eq true }
+      its(:auto_reconnect) { should eq true }
       
       xit "binds match and error handlers to reconnected sockets" do
         matches = []
@@ -93,9 +95,18 @@ describe Ionian::ManagedSocket do
           server.close rescue IOError
         end
       end
-      
     end
-    
+  end
+  
+  describe "raise error if auto_reconnect is not true" do
+    let(:auto_reconnect) { false }
+    specify { expect{subject}.to raise_error NotImplementedError }
+  end
+  
+  describe "error handlers not implemented" do
+    [:on_error, :register_error_handler, :unregister_error_handler].each do |meth|
+      specify { expect{subject.__send__ meth}.to raise_error NotImplementedError }
+    end
   end
   
 end
