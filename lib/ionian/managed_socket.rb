@@ -25,12 +25,6 @@ module Ionian
       @write_pipe_rx, @write_pipe_tx = IO.pipe
     end
     
-    # --------------------------------------------------------------------------
-    # TODO: Significantly simplify the ManagedSocket interface.
-    #       Create a reactor loop that handles writing data and
-    #       automatic reconnect.
-    # --------------------------------------------------------------------------
-    
     # Close the socket.
     # Disables :auto_reconnect.
     def close
@@ -46,7 +40,19 @@ module Ionian
     def run
       create_socket unless @run_thread
       @run_thread ||= Thread.new do
-        # p ::IO.select [@write_pipe_rx], nil, nil, nil
+        io = ::IO.select([@write_pipe_rx, @socket], nil, nil, nil).first.first
+        
+        case io
+          
+        when @write_pipe_rx
+          while @socket and not @write_queue.empty?
+            @socket.write @write_queue.shift
+          end
+          
+        when @socket
+          raise NotImplementedError
+          
+        end
       end
     end
     

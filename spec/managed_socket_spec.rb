@@ -41,6 +41,29 @@ describe Ionian::ManagedSocket do
     
     after { subject.close }
     
+    it "connects to client" do
+      Timeout.timeout(1) { Thread.pass until clients.count > 0 }
+      clients.count.should eq 1
+    end
+    
+    describe "can read and write data" do
+      let(:data_1) { "ping\n" }
+      let(:data_2) { "pong\n" }
+      
+      around { |test| Timeout.timeout(2) { test.run } }
+      
+      specify do
+        subject.write data_1
+        client.extend Ionian::Extension::Socket
+        client.read_all.should eq data_1
+        
+        client.write data_2
+        Thread.pass until matches.count > 0
+        matches.first.should be_a MatchData
+        matches.first.to_s.should eq data_2
+      end
+    end
+    
     describe "automatic reconnect" do
       let(:kwargs) {{ host: host, port: port, auto_reconnect: true, connect_timeout: 1 }}
       
