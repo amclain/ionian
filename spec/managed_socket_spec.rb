@@ -9,12 +9,21 @@ describe Ionian::ManagedSocket do
   subject { Ionian::ManagedSocket.new **kwargs }
   let(:kwargs) {{ host: host, port: port }}
   let(:host)   { 'localhost' }
-  let(:skip_after_block) { false }
   
-  after { subject.close if not skip_after_block and subject.respond_to? :close and not subject.closed? }
   
   def wait_until_client
     Thread.pass until client
+  end
+  
+  
+  describe "interface" do
+    let(:port) { 5050 }
+    
+    it { should respond_to :register_match_handler }
+    it { should respond_to :on_match }
+    it { should respond_to :write }
+    it { should respond_to :close }
+    it { should respond_to :run }
   end
   
   
@@ -28,14 +37,10 @@ describe Ionian::ManagedSocket do
       end
     }
     
-    # TODO: These tests can go away if ManagedSocket doesn't share the same interface.
-    # include_examples "ionian interface"
-    # include_examples "socket extension interface"
+    after { subject.close }
     
     describe "automatic reconnect" do
       let(:kwargs) {{ host: host, port: port, auto_reconnect: true, connect_timeout: 1 }}
-      
-      after { subject.close }
       
       # its(:auto_reconnect) { should eq true }
       
