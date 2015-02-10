@@ -4,7 +4,7 @@ require_relative 'listener_socket_context'
 require_relative 'extension/ionian_interface'
 require_relative 'extension/socket_extension_interface'
 
-describe Ionian::ManagedSocket,iso:true do
+describe Ionian::ManagedSocket do
   subject { Ionian::ManagedSocket.new **kwargs }
   let(:kwargs) {{ host: host, port: port, auto_reconnect: auto_reconnect }}
   let(:host) { 'localhost' }
