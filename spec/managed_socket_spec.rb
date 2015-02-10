@@ -36,6 +36,7 @@ describe Ionian::ManagedSocket do
         subject.on_match { |match| matches << match }
         subject.run
         wait_until_client
+        client.extend Ionian::Extension::Socket
       end
     }
     
@@ -52,9 +53,8 @@ describe Ionian::ManagedSocket do
       
       around { |test| Timeout.timeout(2) { test.run } }
       
-      specify do
+      fspecify do
         subject.write data_1
-        client.extend Ionian::Extension::Socket
         client.read_all.should eq data_1
         
         client.write data_2

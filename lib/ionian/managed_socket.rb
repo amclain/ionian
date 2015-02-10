@@ -23,6 +23,7 @@ module Ionian
       
       @write_queue = Queue.new
       @write_pipe_rx, @write_pipe_tx = IO.pipe
+      @write_pipe_rx.extend Ionian::Extension::IO
     end
     
     # Close the socket.
@@ -40,18 +41,25 @@ module Ionian
     def run
       create_socket unless @run_thread
       @run_thread ||= Thread.new do
-        io = ::IO.select([@write_pipe_rx, @socket], nil, nil, nil).first.first
-        
-        case io
-          
-        when @write_pipe_rx
-          while @socket and not @write_queue.empty?
-            @socket.write @write_queue.shift
+        while not @write_pipe_rx.closed?
+          begin
+            sock_fd = @socket.instance_variable_get :@socket # TODO: Expose socket fd in public API.
+            io = ::IO.select([@write_pipe_rx, sock_fd], nil, nil, nil).first.first
+            
+            case io
+            
+            when @write_pipe_rx
+              @write_pipe_rx.read_all
+              while @socket and not @write_queue.empty?
+                @socket.write @write_queue.shift
+              end
+              
+            when sock_fd
+              raise NotImplementedError
+              
+            end
+          rescue IOError # Socket closed.
           end
-          
-        when @socket
-          raise NotImplementedError
-          
         end
       end
     end
@@ -119,7 +127,7 @@ module Ionian
         @match_handlers.each { |h| @socket.register_match_handler &h }
         @error_handlers.each { |h| @socket.register_error_handler &h }
         
-        @socket.run_match
+        # @socket.run_match
       rescue Errno::ECONNREFUSED, SystemCallError => e
         if auto_reconnect
           sleep @kwargs.fetch :connect_timeout, 10
