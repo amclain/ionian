@@ -1,5 +1,7 @@
 require 'ionian/socket'
 
+Thread.abort_on_exception = true
+
 module Ionian
   
   # A socket manager that performs functions like heartbeating and auto-reconnect.
@@ -42,9 +44,7 @@ module Ionian
       @run_thread ||= Thread.new do
         while not @write_pipe_rx.closed?
           begin
-            # p "CREATED SOCKET" if (not @socket or @socket.closed?) and not @write_pipe_rx.closed?
             create_socket if (not @socket or @socket.closed?) and not @write_pipe_rx.closed?
-            
             
             sock_fd = @socket.instance_variable_get :@socket # TODO: Expose socket fd in public API.
             io = ::IO.select([@write_pipe_rx, sock_fd], nil, nil, nil).first.first
@@ -61,7 +61,8 @@ module Ionian
               @socket.read_match
               
             end
-          rescue IOError # Socket closed.
+          rescue IOError => e # Far-end socket closed.
+            @socket.close if @socket
           end
         end
       end

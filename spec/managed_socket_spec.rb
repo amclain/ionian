@@ -69,7 +69,7 @@ describe Ionian::ManagedSocket do
       
       its(:auto_reconnect) { should eq true }
       
-      xit "binds match and error handlers to reconnected sockets" do
+      it "binds match and error handlers to reconnected sockets" do
         (1..4).each do |i|
           clients.count.should eq i
           matches.count.should eq i - 1
