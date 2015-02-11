@@ -31,11 +31,15 @@ module Ionian
     # Close the socket.
     # Disables :auto_reconnect.
     def close
-      @auto_reconnect = false
-      @socket.close if @socket and not @socket.closed?
-      @write_pipe_tx.close rescue IOError
-      @write_pipe_rx.close rescue IOError
-      @write_queue = nil
+      unless @closed == true
+        @auto_reconnect = false
+        @socket.close if @socket and not @socket.closed?
+        @write_pipe_tx.close rescue IOError
+        @write_pipe_rx.close rescue IOError
+        @write_queue = nil
+        
+        @closed = true
+      end
     end
     
     # Start the event loop.
@@ -60,7 +64,7 @@ module Ionian
               
             end
           rescue IOError => e # Far-end socket closed.
-            @socket.close if @socket
+            @socket.close if @socket and not @socket.closed?
           end
         end
       end

@@ -100,11 +100,13 @@ describe Ionian::ManagedSocket do
           server_thread.kill
           sleep 0.1
           
-          Thread.new {
+          thread = Thread.new {
             sleep 1.5
             server = TCPServer.new port
+            server.extend(Ionian::Extension::Socket).reuse_addr = true
             clients << server.accept
-          }.run
+            server.close rescue IOError
+          }
           
           subject.run
           sleep 4
@@ -113,6 +115,7 @@ describe Ionian::ManagedSocket do
           
           subject.close
           server.close rescue IOError
+          thread.kill
         end
       end
     end
