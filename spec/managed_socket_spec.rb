@@ -127,7 +127,7 @@ describe Ionian::ManagedSocket do
   end
   
   describe "error handlers not implemented" do
-    [:on_error, :register_error_handler, :unregister_error_handler].each do |meth|
+    [:on_status_change, :register_status_handler, :unregister_status_handler].each do |meth|
       specify { expect{subject.__send__ meth}.to raise_error NotImplementedError }
     end
   end

@@ -20,8 +20,8 @@ module Ionian
       raise NotImplementedError, ':auto_reconnect must be set true.' unless @auto_reconnect
       @kwargs = kwargs
       
-      @match_handlers = []
-      @error_handlers = []
+      @match_handlers  = []
+      @status_handlers = []
       
       @write_queue = Queue.new
       @write_pipe_rx, @write_pipe_tx = IO.pipe
@@ -63,7 +63,7 @@ module Ionian
               @socket.read_match
               
             end
-          rescue IOError => e # Far-end socket closed.
+          rescue IOError # Far-end socket closed.
             @socket.close if @socket and not @socket.closed?
           end
         end
@@ -96,29 +96,19 @@ module Ionian
       block
     end
     
-    # Register a block to be called when {Ionian::Extension::IO#run_match}
-    # raises an error.
+    # Register a block to be called when there is a change in socket status.
     # Method callbacks can be registered with &object.method(:method).
     # @return [Block] a reference to the given block.
-    # @yield [Exception, self]
-    def register_error_handler &block
+    # @yield [status, self]
+    def register_status_handler &block
       raise NotImplementedError
-      
-      # @error_handlers << block unless @error_handlers.include? block
-      # @socket.register_error_handler &block if @socket
-      # block
     end
     
-    alias_method :on_error, :register_error_handler
+    alias_method :on_status_change, :register_status_handler
     
-    # Unregister a block from being called when a {Ionian::IO#run_match} error
-    # is raised.
-    def unregister_error_handler &block
+    # Unregister a block from being called when there is a change in socket status.
+    def unregister_status_handler &block
       raise NotImplementedError
-      
-      # @error_handlers.delete_if { |o| o == block }
-      # @socket.unregister_error_handler &block if @socket
-      # block
     end
     
     
@@ -131,7 +121,7 @@ module Ionian
         
         @socket.on_error &method(:socket_error_handler)
         @match_handlers.each { |h| @socket.register_match_handler &h }
-        @error_handlers.each { |h| @socket.register_error_handler &h }
+        # @error_handlers.each { |h| @socket.register_error_handler &h }
       rescue Errno::ECONNREFUSED, SystemCallError => e
         if auto_reconnect
           sleep @kwargs.fetch :connect_timeout, 10
