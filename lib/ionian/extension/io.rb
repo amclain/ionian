@@ -176,14 +176,6 @@ module Ionian
         end
       end
       
-      def run_match_is_running?
-        return true if \
-          @run_match_thread and
-          @run_match_thread.thread_variable_get(:match_thread_running)
-        
-        false
-      end
-      
       # Erase the data in the IO and Ionian buffers.
       # This is typically handled automatically.
       def purge

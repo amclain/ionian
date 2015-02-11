@@ -100,9 +100,9 @@ module Ionian
     def register_error_handler &block
       raise NotImplementedError
       
-      @error_handlers << block unless @error_handlers.include? block
-      @socket.register_error_handler &block if @socket
-      block
+      # @error_handlers << block unless @error_handlers.include? block
+      # @socket.register_error_handler &block if @socket
+      # block
     end
     
     alias_method :on_error, :register_error_handler
@@ -112,9 +112,9 @@ module Ionian
     def unregister_error_handler &block
       raise NotImplementedError
       
-      @error_handlers.delete_if { |o| o == block }
-      @socket.unregister_error_handler &block if @socket
-      block
+      # @error_handlers.delete_if { |o| o == block }
+      # @socket.unregister_error_handler &block if @socket
+      # block
     end
     
     
