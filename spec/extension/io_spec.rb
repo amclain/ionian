@@ -23,10 +23,14 @@ describe Ionian::Extension::IO do
     subject.expression.should eq value
   end
   
+  specify "read_match returns an empty array if timeout expires" do
+    subject.read_match(timeout: 0).should eq []
+  end
+  
   it "can purge Ionian's read buffer" do
     client.puts 'test data'
     subject.purge
-    subject.read_match(timeout: 0).should eq nil
+    subject.read_match(timeout: 0).should eq []
   end
   
   it "can read matched data" do

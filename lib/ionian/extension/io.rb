@@ -84,8 +84,8 @@ module Ionian
       # @yieldparam match [MatchData] If there are multiple matches, the block
       #   is called multiple times.
       # 
-      # @return [Array<MatchData>, nil] matches.
-      #   Nil if no data was received within the timeout period.
+      # @return [Array<MatchData>] matches.
+      #   Empty array if no data was received within the timeout period.
       # 
       # 
       # @option kwargs [Numeric] :timeout (nil) Timeout in seconds IO::select
@@ -114,7 +114,7 @@ module Ionian
         exp           = Regexp.new "(.*?)#{exp}" if exp.is_a? String
         
         unless skip_select
-          return nil unless self.has_data? timeout: timeout
+          return [] unless self.has_data? timeout: timeout
         end
         
         @matches = []
@@ -165,8 +165,7 @@ module Ionian
           Thread.current.thread_variable_set :match_thread_running, true
           begin
             while not closed? do
-              matches = read_match **kwargs
-              matches.each { |match| notify_match_handlers match } if matches
+              read_match(**kwargs).each { |match| notify_match_handlers match }
             end
           rescue Exception => e
             notify_error_handlers e
