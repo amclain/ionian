@@ -167,19 +167,27 @@ module Ionian
         end
       end
     end
+    
+    # @return [IO] the file descriptor for this socket.
+    #   For use with methods like IO.select.
+    def fd
+      @socket
+    end
         
-    # Returns the regular expression used to match incoming data.
+    # @return [Regexp] the regular expression used to match incoming data.
     def expression
       @expression || @socket.expression
     end
     
     # Set the regular expression used to match incoming data.
+    # @param exp [Regexp, String] Match expression.
+    # @see Ionian::Extension::IO#expression=
     def expression= exp
       @expression = exp
       @socket.expression = exp if @socket
     end
     
-    # Returns true if the socket remains open after writing data.
+    # @return [Boolean] True if the socket remains open after writing data.
     def persistent?
       @persistent == false || @persistent == nil ? false : true
     end

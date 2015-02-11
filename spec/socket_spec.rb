@@ -102,6 +102,11 @@ describe Ionian::Socket do
     end
     
     
+    it "exposes its file descriptor for use with methods like IO.select" do
+      subject.fd.should be_a IO
+    end
+    
+    
     describe "parse port from host string" do
       let(:host) { 'localhost' }
       let(:kwargs) {{ host: "#{host}:#{port}" }}

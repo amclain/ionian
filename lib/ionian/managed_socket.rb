@@ -45,9 +45,7 @@ module Ionian
         while not @write_pipe_rx.closed?
           begin
             create_socket if (not @socket or @socket.closed?) and not @write_pipe_rx.closed?
-            
-            sock_fd = @socket.instance_variable_get :@socket # TODO: Expose socket fd in public API.
-            io = ::IO.select([@write_pipe_rx, sock_fd], nil, nil, nil).first.first
+            io = ::IO.select([@write_pipe_rx, @socket.fd], nil, nil, nil).first.first
             
             case io
             
@@ -57,7 +55,7 @@ module Ionian
                 @socket.write @write_queue.shift
               end
               
-            when sock_fd
+            when @socket.fd
               @socket.read_match
               
             end
@@ -77,7 +75,7 @@ module Ionian
     # Register a block to be called when {Ionian::Extension::IO#run_match}
     # receives matched data.
     # Method callbacks can be registered with &object.method(:method).
-    # @return [Block] The given block.
+    # @return [Block] the given block.
     # @yield [MatchData, self]
     def register_match_handler &block
       @match_handlers << block unless @match_handlers.include? block

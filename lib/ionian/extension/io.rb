@@ -39,7 +39,7 @@ module Ionian
         ::IO.select([self], nil, nil, timeout) ? true : false
       end
       
-      # @return [Regexp] Regular expression used for {#read_match}.
+      # @return [Regexp] the regular expression used for {#read_match}.
       def expression
         @ionian_expression
       end
@@ -50,6 +50,7 @@ module Ionian
       # sequence. It is possible to use named captures in a
       # regex, which allows for convienient accessors like
       # match[:parameter].
+      # @param exp [Regexp, String] Match expression.
       def expression= exp
         @ionian_expression = exp
         @ionian_expression = Regexp.new "(.*?)#{expression}" if exp.is_a? String
