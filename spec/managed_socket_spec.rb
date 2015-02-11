@@ -94,7 +94,7 @@ describe Ionian::ManagedSocket do
       describe "happens if the socket can't connect on the first try" do
         let(:create_subject) { false }
         
-        xspecify do
+        specify do
           clients.count.should eq 0
           server.close
           server_thread.kill
@@ -106,7 +106,7 @@ describe Ionian::ManagedSocket do
             clients << server.accept
           }.run
           
-          subject
+          subject.run
           sleep 4
           
           clients.count.should eq 1

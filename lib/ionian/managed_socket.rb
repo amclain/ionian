@@ -33,8 +33,8 @@ module Ionian
     def close
       @auto_reconnect = false
       @socket.close if @socket and not @socket.closed?
-      @write_pipe_tx.close
-      @write_pipe_rx.close
+      @write_pipe_tx.close rescue IOError
+      @write_pipe_rx.close rescue IOError
       @write_queue = nil
     end
     
