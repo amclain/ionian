@@ -53,7 +53,7 @@ describe Ionian::ManagedSocket do
       
       around { |test| Timeout.timeout(2) { test.run } }
       
-      fspecify do
+      specify do
         subject.write data_1
         client.read_all.should eq data_1
         
@@ -70,25 +70,22 @@ describe Ionian::ManagedSocket do
       its(:auto_reconnect) { should eq true }
       
       xit "binds match and error handlers to reconnected sockets" do
-        matches = []
-        subject.on_match { |m| matches << m }
-        
-        exceptions = []
-        subject.on_error { |e| exceptions << e } 
-        
         (1..4).each do |i|
           clients.count.should eq i
           matches.count.should eq i - 1
-          exceptions.count.should eq i - 1
+          # exceptions.count.should eq i - 1
           
           client.write "test\n"
-          Timeout.timeout(1) { Thread.pass until matches.count == i }
+          Timeout.timeout(1) { Thread.pass until matches.count >= i }
+          matches.count.should eq i
           
           client.close
           
           Timeout.timeout(1) {
-            Thread.pass until exceptions.count == i
-            Thread.pass until clients.count == i + 1
+            # Thread.pass until exceptions.count >= i
+            # exceptions.count.should eq i
+            Thread.pass until clients.count >= i + 1
+            clients.count.should eq i + 1
           }
         end
       end

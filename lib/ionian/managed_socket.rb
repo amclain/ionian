@@ -39,10 +39,13 @@ module Ionian
     # Start the event loop.
     # Should be called after the handlers are registered.
     def run
-      create_socket unless @run_thread
       @run_thread ||= Thread.new do
         while not @write_pipe_rx.closed?
           begin
+            # p "CREATED SOCKET" if (not @socket or @socket.closed?) and not @write_pipe_rx.closed?
+            create_socket if (not @socket or @socket.closed?) and not @write_pipe_rx.closed?
+            
+            
             sock_fd = @socket.instance_variable_get :@socket # TODO: Expose socket fd in public API.
             io = ::IO.select([@write_pipe_rx, sock_fd], nil, nil, nil).first.first
             
@@ -55,7 +58,7 @@ module Ionian
               end
               
             when sock_fd
-              raise NotImplementedError
+              @socket.read_match
               
             end
           rescue IOError # Socket closed.
@@ -126,8 +129,6 @@ module Ionian
         @socket.on_error &method(:socket_error_handler)
         @match_handlers.each { |h| @socket.register_match_handler &h }
         @error_handlers.each { |h| @socket.register_error_handler &h }
-        
-        # @socket.run_match
       rescue Errno::ECONNREFUSED, SystemCallError => e
         if auto_reconnect
           sleep @kwargs.fetch :connect_timeout, 10
