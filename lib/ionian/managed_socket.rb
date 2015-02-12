@@ -119,9 +119,7 @@ module Ionian
       begin
         @socket = Ionian::Socket.new **@kwargs
         
-        @socket.on_error &method(:socket_error_handler)
         @match_handlers.each { |h| @socket.register_match_handler &h }
-        # @error_handlers.each { |h| @socket.register_error_handler &h }
       rescue Errno::ECONNREFUSED, SystemCallError => e
         if auto_reconnect
           sleep @kwargs.fetch :connect_timeout, 10
@@ -130,24 +128,6 @@ module Ionian
           raise e
         end
       end
-    end
-    
-    # {Ionian::Socket#on_error} handler for @socket.
-    def socket_error_handler e, socket
-      if auto_reconnect
-        @socket.close if @socket and not @socket.closed?
-        create_socket
-      else
-        raise e unless e.is_a? EOFError or e.is_a? IOError
-      end
-    end
-    
-    def notify_match_handlers match
-      @match_handlers.each { |h| h.call match, self }
-    end
-    
-    def notify_error_handlers exception
-      @error_handlers.each { |h| h.call exception, self }
     end
     
   end
